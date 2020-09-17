@@ -224,11 +224,11 @@ namespace FlightStreamDeck.Logics
 
                     ctx.DrawLines(pen, needle);
 
-                    if (!string.IsNullOrWhiteSpace(text))
-                    {
-                        var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
-                        ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 3, 46));
-                    }
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
+                    ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 40));
+                }
 
                     var valueText = value.ToString();
                     Color textColor = value > max ? Color.Red : Color.White;

@@ -6,6 +6,7 @@ using Polly.Retry;
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,6 +23,7 @@ namespace FlightStreamDeck.AddOn
         private readonly IFlightConnector flightConnector;
         private readonly ILogger<MainWindow> logger;
         private IntPtr Handle;
+        private SerialPort arduinoPort = new SerialPort("COM3", 9600);
 
         public MainWindow(DeckLogic deckLogic, IFlightConnector flightConnector, ILogger<MainWindow> logger)
         {
@@ -99,10 +101,48 @@ namespace FlightStreamDeck.AddOn
                 {
                     myNotifyIcon.Icon = new Icon("Images/button@2x.ico");
                     simConnect.Initialize(Handle);
+                    setupArduino();
                     myNotifyIcon.Icon = new Icon("Images/button_active@2x.ico");
                     simConnect.Send("Connected to Stream Deck plugin");
                     return Task.FromResult<object>(null);
                 });
+        }
+
+        private void setupArduino()
+        {
+            try
+            {
+                arduinoPortOpen();
+                DeckLogic.arudinoConnected = true;
+                arduinoPort.DataReceived += arduinoPort_DataReceived;
+            }
+            catch (Exception) { }
+        }
+
+        public void arduinoPortOpen()
+        {
+            if (arduinoPort.IsOpen)
+            {
+                arduinoPort.Close();
+            }
+
+            arduinoPort.Open();
+        }
+
+        void arduinoPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                int potVal = int.Parse(arduinoPort.ReadLine());
+                Debug.WriteLine(potVal);
+                string value = potVal.ToString();
+                uint data = unchecked((uint)potVal);
+                flightConnector.TrimSetValue(data);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failure in arduino message received...");
+            }
         }
 
         private async void SimConnect_Closed(object sender, EventArgs e)

@@ -16,6 +16,7 @@ namespace FlightStreamDeck.Logics.Actions
         public float MaxValue { get; set; }
         public string ToggleValue { get; set; }
         public string DisplayValue { get; set; }
+        public bool ArduinoConnectedInd { get; set; }
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.gauge")]
@@ -30,6 +31,7 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_VALUE? displayValue = null;
 
         private float currentValue = 0;
+        private bool arduinoConnectedInd = false;
 
         private GenericGaugeSettings settings;
 
@@ -132,7 +134,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (settings != null)
             {
-                await SetImageAsync(imageLogic.GetGenericGaugeImage(settings.Header, currentValue, settings.MinValue, settings.MaxValue));
+                await SetImageAsync(imageLogic.GetGaugeImage($"{settings.Header}{(settings.ArduinoConnectedInd && DeckLogic.arudinoConnected ? "*" : "")}", currentValue, settings.MinValue, settings.MaxValue));
             }
         }
     }
