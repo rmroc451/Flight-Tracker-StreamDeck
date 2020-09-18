@@ -600,14 +600,14 @@ namespace FlightStreamDeck.SimConnectFSX
         void Simconnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
         {
             logger.LogError("Exception received: {0}", (SIMCONNECT_EXCEPTION)data.dwException);
-            switch ((SIMCONNECT_EXCEPTION)data.dwException)
-            {
-                case SIMCONNECT_EXCEPTION.ERROR:
-                    // Try to reconnect on unknown error
-                    CloseConnection();
-                    Closed?.Invoke(this, new EventArgs());
-                    break;
-            }
+            //switch ((SIMCONNECT_EXCEPTION)data.dwException)
+            //{
+            //    case SIMCONNECT_EXCEPTION.ERROR:
+            //        // Try to reconnect on unknown error
+            //        CloseConnection();
+            //        Closed?.Invoke(this, new EventArgs());
+            //        break;
+            //}
         }
 
         private void RecoverFromError(Exception exception)
@@ -615,8 +615,8 @@ namespace FlightStreamDeck.SimConnectFSX
             // 0xC000014B: CTD
             // 0xC00000B0: Sim has exited
             logger.LogError(exception, "Exception received");
-            CloseConnection();
-            Closed?.Invoke(this, new EventArgs());
+            //CloseConnection();
+            //Closed?.Invoke(this, new EventArgs());
         }
 
         #region Experimental

@@ -134,7 +134,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (settings != null)
             {
-                await SetImageAsync(imageLogic.GetGaugeImage($"{settings.Header}{(settings.ArduinoConnectedInd && DeckLogic.arudinoConnected ? "*" : "")}", currentValue, settings.MinValue, settings.MaxValue));
+                await SetImageAsync(imageLogic.GetGenericGaugeImage($"{settings.Header}{(settings.ArduinoConnectedInd && DeckLogic.arudinoConnected ? "*" : "")}", currentValue, settings.MinValue, settings.MaxValue));
             }
         }
     }
