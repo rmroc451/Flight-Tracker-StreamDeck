@@ -2,6 +2,7 @@
 using FlightStreamDeck.SimConnectFSX;
 using Microsoft.Extensions.Logging;
 using Polly;
+using Polly.Fallback;
 using Polly.Retry;
 using System;
 using System.Diagnostics;
