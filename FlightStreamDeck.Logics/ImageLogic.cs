@@ -226,10 +226,10 @@ namespace FlightStreamDeck.Logics
 
                     FontRectangle size = new FontRectangle(0, 0, 0, 0); 
                     if (!string.IsNullOrWhiteSpace(text))
-                {
-                    var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
-                    ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 40));
-                }
+                    {
+                        size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
+                        ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 40));
+                    }
 
                     var valueText = value.ToString();
                     var sizeValue = TextMeasurer.Measure(valueText, new RendererOptions(font));
