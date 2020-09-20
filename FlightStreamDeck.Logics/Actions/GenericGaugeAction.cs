@@ -116,7 +116,7 @@ namespace FlightStreamDeck.Logics.Actions
             if (displayValue.HasValue && e.GenericValueStatus.ContainsKey(displayValue.Value))
             {
                 float.TryParse(e.GenericValueStatus[displayValue.Value], out float newValue);
-                isUpdated = currentValue != newValue;
+                isUpdated |= currentValue != newValue;
                 currentValue = newValue;
             }
 
@@ -127,7 +127,7 @@ namespace FlightStreamDeck.Logics.Actions
                 {
                     newValue = (float)(newValue / 33.864);
                 }
-                isUpdated = currentSubValue != newValue;
+                isUpdated |= currentSubValue != newValue;
                 currentSubValue = newValue;
             }
 
