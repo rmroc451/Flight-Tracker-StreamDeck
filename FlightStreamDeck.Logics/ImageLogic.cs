@@ -16,7 +16,7 @@ namespace FlightStreamDeck.Logics
         string GetNumberImage(int number);
         string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false);
         public string GetHorizonImage(float pitchInDegrees, float rollInDegrees, float headingInDegrees);
-        public string GetGenericGaugeImage(string text, float value, float min, float max);
+        public string GetGenericGaugeImage(string text, float value, float subValue, float min, float max);
         public string GetCustomGaugeImage(string textTop, string textBottom,
             string valueTop, string valueBottom,
             float min, float max,
@@ -185,7 +185,7 @@ namespace FlightStreamDeck.Logics
             }
         }
 
-        public string GetGenericGaugeImage(string text, float value, float min, float max)
+        public string GetGenericGaugeImage(string text, float value, float subValue, float min, float max)
         {
             var font = SystemFonts.CreateFont("Arial", 22, FontStyle.Regular);
             var titleFont = SystemFonts.CreateFont("Arial", 13, FontStyle.Regular);
@@ -224,15 +224,19 @@ namespace FlightStreamDeck.Logics
 
                     ctx.DrawLines(pen, needle);
 
-                if (!string.IsNullOrWhiteSpace(text))
+                    FontRectangle size = new FontRectangle(0, 0, 0, 0); 
+                    if (!string.IsNullOrWhiteSpace(text))
                 {
                     var size = TextMeasurer.Measure(text, new RendererOptions(titleFont));
                     ctx.DrawText(text, titleFont, Color.White, new PointF(HALF_WIDTH - size.Width / 2, 40));
                 }
 
                     var valueText = value.ToString();
+                    var sizeValue = TextMeasurer.Measure(valueText, new RendererOptions(font));
                     Color textColor = value > max ? Color.Red : Color.White;
                     ctx.DrawText(valueText, font, textColor, new PointF(18, 20));
+
+                    if (subValue != float.MinValue) ctx.DrawText(subValue.ToString("F2"), titleFont, textColor, new PointF(18, 20 + sizeValue.Height + size.Height));
                 }
                 else
                 {

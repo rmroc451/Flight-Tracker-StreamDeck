@@ -29,9 +29,10 @@ namespace FlightStreamDeck.Logics.Actions
 
         private TOGGLE_EVENT? toggleEvent = null;
         private TOGGLE_VALUE? displayValue = null;
+        private TOGGLE_VALUE? subDisplayValue = null;
 
         private float currentValue = 0;
-        private bool arduinoConnectedInd = false;
+        private float currentSubValue = float.MinValue;
 
         private GenericGaugeSettings settings;
 
@@ -87,14 +88,21 @@ namespace FlightStreamDeck.Logics.Actions
 
             TOGGLE_EVENT? newToggleEvent = enumConverter.GetEventEnum(settings.ToggleValue);
             TOGGLE_VALUE? newDisplayValue = enumConverter.GetVariableEnum(settings.DisplayValue);
+            TOGGLE_VALUE? newSubDisplayValue = null;
 
-            if (newDisplayValue != displayValue)
+            if (newDisplayValue == TOGGLE_VALUE.INDICATED_ALTITUDE)
+            {
+                newSubDisplayValue = TOGGLE_VALUE.KOHLSMAN_SETTING_MB;
+            }
+
+            if (newDisplayValue != displayValue || newSubDisplayValue != subDisplayValue)
             {
                 DeRegisterValues();
             }
 
             toggleEvent = newToggleEvent;
             displayValue = newDisplayValue;
+            subDisplayValue = newSubDisplayValue;
 
             RegisterValues();
         }
@@ -112,6 +120,17 @@ namespace FlightStreamDeck.Logics.Actions
                 currentValue = newValue;
             }
 
+            if (subDisplayValue.HasValue && e.GenericValueStatus.ContainsKey(subDisplayValue.Value))
+            {
+                float.TryParse(e.GenericValueStatus[subDisplayValue.Value], out float newValue);
+                if(subDisplayValue.Value == TOGGLE_VALUE.KOHLSMAN_SETTING_MB)
+                {
+                    newValue = (float)(newValue / 33.864);
+                }
+                isUpdated = currentSubValue != newValue;
+                currentSubValue = newValue;
+            }
+
             if (isUpdated)
             {
                 await UpdateImage();
@@ -122,19 +141,22 @@ namespace FlightStreamDeck.Logics.Actions
         {
             if (toggleEvent.HasValue) flightConnector.RegisterToggleEvent(toggleEvent.Value);
             if (displayValue.HasValue) flightConnector.RegisterSimValue(displayValue.Value);
+            if (subDisplayValue.HasValue) flightConnector.RegisterSimValue(subDisplayValue.Value);
         }
 
         private void DeRegisterValues()
         {
             if (displayValue.HasValue) flightConnector.DeRegisterSimValue(displayValue.Value);
+            if (subDisplayValue.HasValue) flightConnector.DeRegisterSimValue(subDisplayValue.Value);
             currentValue = 0;
+            currentValue = float.MinValue;
         }
 
         private async Task UpdateImage()
         {
             if (settings != null)
             {
-                await SetImageAsync(imageLogic.GetGenericGaugeImage($"{settings.Header}{(settings.ArduinoConnectedInd && DeckLogic.arudinoConnected ? "*" : "")}", currentValue, settings.MinValue, settings.MaxValue));
+                await SetImageAsync(imageLogic.GetGenericGaugeImage($"{settings.Header}{(settings.ArduinoConnectedInd && DeckLogic.arudinoConnected ? "*" : "")}", currentValue, currentSubValue, settings.MinValue, settings.MaxValue));
             }
         }
     }

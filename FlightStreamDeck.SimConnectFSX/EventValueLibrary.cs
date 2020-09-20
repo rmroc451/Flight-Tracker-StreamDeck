@@ -117,7 +117,7 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.MACH_MAX_OPERATE, new ValueEntry("Mach", 2) },
             { TOGGLE_VALUE.BARBER_POLE_MACH, new ValueEntry("Mach", 2) },
             { TOGGLE_VALUE.INDICATED_ALTITUDE, new ValueEntry("Feet", 0) },
-            { TOGGLE_VALUE.KOHLSMAN_SETTING_MB, new ValueEntry("Millibars", 0) },
+            { TOGGLE_VALUE.KOHLSMAN_SETTING_MB, new ValueEntry("Millibars", 2) },
             { TOGGLE_VALUE.KOHLSMAN_SETTING_HG, new ValueEntry("Inches of Mercury, inHg", 2) },
             { TOGGLE_VALUE.ATTITUDE_BARS_POSITION, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.WISKEY_COMPASS_INDICATION_DEGREES, new ValueEntry("Degrees", 0) },
