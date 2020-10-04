@@ -27,6 +27,11 @@ namespace FlightStreamDeck.Logics
         void ApAltDec();
         void TrimSetValue(uint trimSet);
         void AvMasterToggle(uint state);
+        void MagnetoOff();
+        void MagnetoLeft();
+        void MagnetoRight();
+        void MagnetoBoth();
+        void MagnetoStart();
 
         void Toggle(TOGGLE_EVENT toggleAction);
         void Set(SET_EVENT setAction, uint data);
