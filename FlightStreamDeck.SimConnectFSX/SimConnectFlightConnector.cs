@@ -112,6 +112,11 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_DEC, "AP_ALT_VAR_DEC");
             simconnect.MapClientEventToSimEvent(EVENTS.AVIONICS_TOGGLE, "AVIONICS_MASTER_SET");
             simconnect.MapClientEventToSimEvent(EVENTS.ELEV_TRIM_SET, "AXIS_ELEV_TRIM_SET");
+            simconnect.MapClientEventToSimEvent(EVENTS.MAG_OFF, "MAGNETO_OFF");
+            simconnect.MapClientEventToSimEvent(EVENTS.MAG_LEFT, "MAGNETO_LEFT");
+            simconnect.MapClientEventToSimEvent(EVENTS.MAG_RIGHT, "MAGNETO_RIGHT");
+            simconnect.MapClientEventToSimEvent(EVENTS.MAG_BOTH, "MAGNETO_BOTH");
+            simconnect.MapClientEventToSimEvent(EVENTS.MAG_START, "MAGNETO_START");
 
         }
 
@@ -196,6 +201,31 @@ namespace FlightStreamDeck.SimConnectFSX
         public void AvMasterToggle(uint state)
         {
             SendCommand(EVENTS.AVIONICS_TOGGLE, state);
+        }
+
+        public void MagnetoOff()
+        {
+            SendCommand(EVENTS.MAG_OFF);
+        }
+
+        public void MagnetoLeft()
+        {
+            SendCommand(EVENTS.MAG_LEFT);
+        }
+
+        public void MagnetoRight()
+        {
+            SendCommand(EVENTS.MAG_RIGHT);
+        }
+
+        public void MagnetoBoth()
+        {
+            SendCommand(EVENTS.MAG_BOTH);
+        }
+
+        public void MagnetoStart()
+        {
+            SendCommand(EVENTS.MAG_START);
         }
 
         private void SendCommand(EVENTS sendingEvent, uint data = 0)

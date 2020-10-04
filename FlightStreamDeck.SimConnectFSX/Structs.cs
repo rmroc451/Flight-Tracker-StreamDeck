@@ -45,7 +45,12 @@ namespace FlightStreamDeck.SimConnectFSX
         AP_ALT_INC,
         AP_ALT_DEC,
         AVIONICS_TOGGLE,
-        ELEV_TRIM_SET
+        ELEV_TRIM_SET,
+        MAG_OFF,
+        MAG_LEFT,
+        MAG_RIGHT,
+        MAG_BOTH,
+        MAG_START
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]

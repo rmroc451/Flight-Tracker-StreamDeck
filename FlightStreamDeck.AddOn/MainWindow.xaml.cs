@@ -126,11 +126,39 @@ namespace FlightStreamDeck.AddOn
         {
             try
             {
-                int potVal = int.Parse(arduinoPort.ReadLine());
-                Debug.WriteLine(potVal);
-                string value = potVal.ToString();
-                uint data = unchecked((uint)potVal);
-                flightConnector.TrimSetValue(data);
+                string readLine = arduinoPort.ReadLine();
+                if (readLine.ToUpper().StartsWith("A0:"))
+                {
+                    int potVal = int.Parse(readLine.Split(":")[1]);
+                    Debug.WriteLine(potVal);
+                    string value = potVal.ToString();
+                    uint data = unchecked((uint)potVal);
+                    flightConnector.TrimSetValue(data);
+                } else if (readLine.ToUpper().StartsWith("A1:"))
+                {
+                    int potVal = int.Parse(readLine.Split(":")[1]);
+                    switch (potVal)
+                    {
+                        case 0:
+                            flightConnector.MagnetoOff();
+                            break;
+                        case 1:
+                            flightConnector.MagnetoLeft();
+                            break;
+                        case 2:
+                            flightConnector.MagnetoRight();
+                            break;
+                        case 3:
+                            flightConnector.MagnetoBoth();
+                            break;
+                        case 4:
+                            flightConnector.MagnetoStart();
+                            break;
+
+                    }
+                    Debug.WriteLine(potVal);
+                }
+
             }
             catch (Exception ex)
             {
