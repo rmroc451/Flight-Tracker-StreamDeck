@@ -22,7 +22,7 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.gauge")]
     public class GenericGaugeAction : StreamDeckAction<GenericGaugeSettings>
     {
-        private readonly ILogger<ApToggleAction> logger;
+        private readonly ILogger<GenericGaugeAction> logger;
         private readonly IFlightConnector flightConnector;
         private readonly IImageLogic imageLogic;
         private readonly EnumConverter enumConverter;
@@ -36,7 +36,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private GenericGaugeSettings settings;
 
-        public GenericGaugeAction(ILogger<ApToggleAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
+        public GenericGaugeAction(ILogger<GenericGaugeAction> logger, IFlightConnector flightConnector, IImageLogic imageLogic,
             EnumConverter enumConverter)
         {
             this.logger = logger;
