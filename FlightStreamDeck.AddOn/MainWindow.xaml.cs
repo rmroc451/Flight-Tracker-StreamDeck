@@ -143,10 +143,10 @@ namespace FlightStreamDeck.AddOn
                             flightConnector.MagnetoOff();
                             break;
                         case 1:
-                            flightConnector.MagnetoLeft();
+                            flightConnector.MagnetoRight();
                             break;
                         case 2:
-                            flightConnector.MagnetoRight();
+                            flightConnector.MagnetoLeft();
                             break;
                         case 3:
                             flightConnector.MagnetoBoth();
