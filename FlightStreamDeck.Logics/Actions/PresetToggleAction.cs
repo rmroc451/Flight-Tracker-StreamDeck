@@ -60,6 +60,10 @@ namespace FlightStreamDeck.Logics.Actions
                         logger.LogInformation("Toggle AP HDG. Current state: {state}.", currentStatus.IsApHdgOn);
                         flightConnector.ApHdgSet((uint)currentStatus.Heading);
                         break;
+                    case PresetFunction.Altitude:
+                        logger.LogInformation("Toggle ALT. Current state: {state}.", currentStatus.IsApAltOn);
+                        flightConnector.ApAltSet((uint)currentStatus.Altitude);
+                        break;
                 }
             }
         }
