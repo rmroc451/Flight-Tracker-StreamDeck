@@ -199,30 +199,28 @@ namespace FlightStreamDeck.Logics
 
             bool barGauge = text.StartsWith("^") || text.StartsWith("*");
 
-            using var img = (!barGauge ? gaugeImage : defaultBackground).Clone(ctx =>
+            using var img = gaugeImage.Clone(ctx =>
             {
-                if (!barGauge)
-                {
-                    double angleOffset = Math.PI * -1.25;
-                    var ratio = (value - min) / range;
-                    if (ratio < 0) ratio = 0;
-                    if (ratio > 1) ratio = 1;
-                    double angle = Math.PI * ratio + angleOffset;
+                double angleOffset = Math.PI * -1.25;
+                var ratio = (value - min) / range;
+                if (ratio < 0) ratio = 0;
+                if (ratio > 1) ratio = 1;
+                double angle = Math.PI * ratio + angleOffset;
 
-                    var startPoint = new PointF(HALF_WIDTH, HALF_WIDTH);
-                    var middlePoint = new PointF(
-                        (float)((HALF_WIDTH - 16) * Math.Cos(angle)),
-                        (float)((HALF_WIDTH - 16) * Math.Sin(angle))
-                        );
+                var startPoint = new PointF(HALF_WIDTH, HALF_WIDTH);
+                var middlePoint = new PointF(
+                    (float)((HALF_WIDTH - 16) * Math.Cos(angle)),
+                    (float)((HALF_WIDTH - 16) * Math.Sin(angle))
+                    );
 
-                    var endPoint = new PointF(
-                        (float)(HALF_WIDTH * Math.Cos(angle)),
-                        (float)(HALF_WIDTH * Math.Sin(angle))
-                        );
+                var endPoint = new PointF(
+                    (float)(HALF_WIDTH * Math.Cos(angle)),
+                    (float)(HALF_WIDTH * Math.Sin(angle))
+                    );
 
-                    PointF[] needle = { startPoint + middlePoint, startPoint + endPoint };
+                PointF[] needle = { startPoint + middlePoint, startPoint + endPoint };
 
-                    ctx.DrawLines(pen, needle);
+                ctx.DrawLines(pen, needle);
 
                     FontRectangle size = new FontRectangle(0, 0, 0, 0); 
                     if (!string.IsNullOrWhiteSpace(text))
@@ -341,22 +339,6 @@ namespace FlightStreamDeck.Logics
 
             using var img = defaultBackground.Clone(ctx =>
             {
-                //////////////////////////////////////////////////
-                ///WIP, NOT RELEASE READY, JUST EXPERIMENTING
-                ///set a current gauge to X|y0,y1,y2,y3
-                ///x : height of bar
-                ///y0-3 : correspond to width of current button percent to be that color of the bar
-                ///
-                /// example : 10|12,24,74
-                /// roughly a C172 G1000 fuel gauge, needs more work, but its almost there
-                /// 
-                /// need to do indicator needle(s)
-                /// allow 1 or 2 inputs to drive needles
-                /// 
-                /// six labors doesn't really allow custom arcs to be drawn, 
-                /// might have to try to revert to system.drawing implementation if we need that. IDK
-                //////////////////////////////////////////////////
-
                 ctx.Draw(new Pen(Color.Black, 100), new RectangleF(0, 0, WIDTH, WIDTH));
                 int width_margin = 10;
                 int img_width = WIDTH - (width_margin * 2);
@@ -409,8 +391,6 @@ namespace FlightStreamDeck.Logics
 
                 if (!horizontal) ctx.Rotate(-90);
             });
-
-
 
             using var memoryStream = new MemoryStream();
             img.Save(memoryStream, new PngEncoder());
