@@ -95,11 +95,9 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.OnRecvException += Simconnect_OnRecvException;
 
             simconnect.OnRecvSimobjectDataBytype += Simconnect_OnRecvSimobjectDataBytypeAsync;
-            RegisterFlightStatusDefinition();
-            RegisterGenericValues(true);
-            RegisterGenericEvents();
-
             simconnect.OnRecvSystemState += Simconnect_OnRecvSystemState;
+
+            RegisterFlightStatusDefinition();
 
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_ON, "AUTOPILOT_ON");
             simconnect.MapClientEventToSimEvent(EVENTS.AUTOPILOT_OFF, "AUTOPILOT_OFF");
@@ -109,6 +107,8 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_APR_TOGGLE, "AP_APR_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_ALT_TOGGLE, "AP_PANEL_ALTITUDE_HOLD");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_TOGGLE, "AP_VS_HOLD");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_FLC_ON, "FLIGHT_LEVEL_CHANGE_ON");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_FLC_OFF, "FLIGHT_LEVEL_CHANGE_OFF");
 
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_SET, "HEADING_BUG_SET");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_HDG_INC, "HEADING_BUG_INC");
@@ -122,6 +122,10 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_INC, "AP_VS_VAR_INC");
             simconnect.MapClientEventToSimEvent(EVENTS.AP_VS_DEC, "AP_VS_VAR_DEC");
 
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_AIRSPEED_SET, "AP_SPD_VAR_SET");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_AIRSPEED_INC, "AP_SPD_VAR_INC");
+            simconnect.MapClientEventToSimEvent(EVENTS.AP_AIRSPEED_DEC, "AP_SPD_VAR_DEC");
+
             simconnect.MapClientEventToSimEvent(EVENTS.AVIONICS_TOGGLE, "AVIONICS_MASTER_SET");
             simconnect.MapClientEventToSimEvent(EVENTS.ELEV_TRIM_SET, "AXIS_ELEV_TRIM_SET");
             simconnect.MapClientEventToSimEvent(EVENTS.MAG_OFF, "MAGNETO_OFF");
@@ -130,6 +134,9 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.MAG_BOTH, "MAGNETO_BOTH");
             simconnect.MapClientEventToSimEvent(EVENTS.MAG_START, "MAGNETO_START");
 
+            isGenericValueRegistered = false;
+            RegisterGenericValues();
+            RegisterGenericEvents();
         }
 
         public void Send(string message)
@@ -177,6 +184,16 @@ namespace FlightStreamDeck.SimConnectFSX
             SendCommand(EVENTS.AP_VS_TOGGLE);
         }
 
+        public void ApFlcOn()
+        {
+            SendCommand(EVENTS.AP_FLC_ON);
+        }
+
+        public void ApFlcOff()
+        {
+            SendCommand(EVENTS.AP_FLC_OFF);
+        }
+
         public void ApHdgSet(uint heading)
         {
             SendCommand(EVENTS.AP_HDG_SET, heading);
@@ -210,6 +227,21 @@ namespace FlightStreamDeck.SimConnectFSX
         public void ApVsSet(uint speed)
         {
             SendCommand(EVENTS.AP_VS_SET, speed);
+        }
+
+        public void ApAirSpeedSet(uint speed)
+        {
+            SendCommand(EVENTS.AP_AIRSPEED_SET, speed);
+        }
+
+        public void ApAirSpeedInc()
+        {
+            SendCommand(EVENTS.AP_AIRSPEED_INC);
+        }
+
+        public void ApAirSpeedDec()
+        {
+            SendCommand(EVENTS.AP_AIRSPEED_DEC);
         }
 
         public void TrimSetValue(uint trimSet)
@@ -493,6 +525,19 @@ namespace FlightStreamDeck.SimConnectFSX
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
 
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT FLIGHT LEVEL CHANGE",
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "AUTOPILOT AIRSPEED HOLD VAR",
+                "Knots",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+
             #endregion
 
             simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
@@ -566,6 +611,8 @@ namespace FlightStreamDeck.SimConnectFSX
                                     IsApAltOn = flightStatus.Value.IsApAltOn == 1,
                                     ApAltitude = flightStatus.Value.ApAlt,
                                     IsApVsOn = flightStatus.Value.IsApVsOn == 1,
+                                    IsApFlcOn = flightStatus.Value.IsApFlcOn == 1,
+                                    ApAirspeed = flightStatus.Value.ApAirspeed,
                                     ApVs = flightStatus.Value.ApVs,
                                     Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),
                                     FreqencyCom1 = flightStatus.Value.Com1,
@@ -644,7 +691,7 @@ namespace FlightStreamDeck.SimConnectFSX
                         cts?.Token.ThrowIfCancellationRequested();
                         simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.FLIGHT_STATUS, DEFINITIONS.FlightStatus, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
 
-                        if (genericValues.Count > 0)
+                        if (genericValues.Count > 0 && isGenericValueRegistered)
                         {
                             simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.TOGGLE_VALUE_DATA, DEFINITIONS.GenericData, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
                         }
@@ -664,27 +711,35 @@ namespace FlightStreamDeck.SimConnectFSX
 
         void Simconnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
         {
-            logger.LogError("Exception received: {0}", (SIMCONNECT_EXCEPTION)data.dwException);
-            //switch ((SIMCONNECT_EXCEPTION)data.dwException)
-            //{
-            //    case SIMCONNECT_EXCEPTION.ERROR:
-            //        // Try to reconnect on unknown error
-            //        CloseConnection();
-            //        Closed?.Invoke(this, new EventArgs());
-            //        break;
-            //}
+            logger.LogError("Exception received: {error}", (SIMCONNECT_EXCEPTION)data.dwException);
+            switch ((SIMCONNECT_EXCEPTION)data.dwException)
+            {
+                case SIMCONNECT_EXCEPTION.ERROR:
+                    // Try to reconnect on unknown error
+                    CloseConnection();
+                    Closed?.Invoke(this, new EventArgs());
+                    break;
+
+                case SIMCONNECT_EXCEPTION.VERSION_MISMATCH:
+                    // HACK: when sending an event repeatedly, 
+                    // SimConnect might sendd thihs error and stop reacting and responding. 
+                    // The workaround would be to force a reconnection.
+                    CloseConnection();
+                    Closed?.Invoke(this, new EventArgs());
+                    break;
+            }
         }
 
         private void RecoverFromError(Exception exception)
         {
             // 0xC000014B: CTD
-            // 0xC00000B0: Sim has exited
+            // 0xC00000B0: Sim has exited or any generic SimConnect error
             logger.LogError(exception, "Exception received");
             //CloseConnection();
             //Closed?.Invoke(this, new EventArgs());
         }
 
-        #region Experimental
+        #region Generic Buttons
 
         public void RegisterToggleEvent(TOGGLE_EVENT toggleAction)
         {
@@ -717,83 +772,139 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public void RegisterSimValue(TOGGLE_VALUE simValue)
         {
+            var changed = false;
             lock (lockLists)
             {
-                bool isEmpty = genericValues.Count == 0;
-
-                if (genericValues.Add(simValue))
-                {
-                    RegisterGenericValues(isEmpty);
-                }
+                logger.LogInformation("Registering {value}", simValue);
+                changed = genericValues.Add(simValue);
+            }
+            if (changed)
+            {
+                RegisterGenericValues();
             }
         }
 
         public void DeRegisterSimValue(TOGGLE_VALUE simValue)
         {
+            var changed = false;
             lock (lockLists)
             {
-                logger.LogInformation("De-Registering {1}", simValue);
-                genericValues.Remove(simValue);
-                RegisterGenericValues(false);
+                logger.LogInformation("De-Registering {value}", simValue);
+                changed = genericValues.Remove(simValue);
+            }
+            if (changed)
+            {
+                RegisterGenericValues();
             }
         }
 
         public void RegisterSimValues(params TOGGLE_VALUE[] simValues)
         {
+            var changed = false;
             lock (lockLists)
             {
-                bool isEmpty = genericValues.Count == 0;
-                var changed = false;
+                logger.LogInformation("Registering {values}", string.Join(", ", simValues));
                 foreach (var simValue in simValues)
                 {
                     changed |= genericValues.Add(simValue);
                 }
-                if (changed)
-                {
-                    RegisterGenericValues(isEmpty);
-                }
+            }
+            if (changed)
+            {
+                RegisterGenericValues();
             }
         }
 
         public void DeRegisterSimValues(params TOGGLE_VALUE[] simValues)
         {
+            var changed = false;
             lock (lockLists)
             {
                 logger.LogInformation("De-Registering {values}", string.Join(", ", simValues));
                 foreach (var simValue in simValues)
                 {
-                    genericValues.Remove(simValue);
+                    changed |= genericValues.Remove(simValue);
                 }
-                RegisterGenericValues(false);
+            }
+            if (changed)
+            {
+                RegisterGenericValues();
             }
         }
 
-        private void RegisterGenericValues(bool wasEmpty)
+        private CancellationTokenSource ctsGeneric = null;
+        private readonly object lockGeneric = new object();
+        private readonly SemaphoreSlim smGeneric = new SemaphoreSlim(1);
+        private bool isGenericValueRegistered = false;
+
+        private void RegisterGenericValues()
         {
             if (simconnect == null) return;
 
-            if (!wasEmpty)
+            CancellationTokenSource cts;
+            lock (lockGeneric)
             {
-                logger.LogInformation("Clearing Data definition");
-                simconnect.ClearDataDefinition(DEFINITIONS.GenericData);
+                ctsGeneric?.Cancel();
+                cts = ctsGeneric = new CancellationTokenSource();
             }
 
-            foreach (TOGGLE_VALUE simValue in genericValues)
+            Task.Run(async () =>
             {
-                string value = simValue.ToString().Replace("__", ":").Replace("_", " ");
-                logger.LogInformation("RegisterValue {1} {2}", simValue, value);
+                try
+                {
+                    await smGeneric.WaitAsync();
 
-                simconnect.AddToDataDefinition(
-                    DEFINITIONS.GenericData,
-                    value,
-                    eventLib.GetUnit(simValue),
-                    SIMCONNECT_DATATYPE.FLOAT64,
-                    0.0f,
-                    SimConnect.SIMCONNECT_UNUSED
-                );
-            }
+                    await Task.Delay(500, cts.Token);
+                    cts.Token.ThrowIfCancellationRequested();
 
-            simconnect.RegisterDataDefineStruct<GenericValuesStruct>(DEFINITIONS.GenericData);
+                    if (simconnect == null) return;
+
+                    if (isGenericValueRegistered)
+                    {
+                        logger.LogInformation("Clearing Data definition");
+                        simconnect.ClearDataDefinition(DEFINITIONS.GenericData);
+                        isGenericValueRegistered = false;
+                    }
+
+                    if (genericValues.Count == 0)
+                    {
+                        logger.LogInformation("Registration is not needed.");
+                    }
+                    else
+                    {
+                        var log = "Registering generic data structure:";
+
+                        foreach (TOGGLE_VALUE simValue in genericValues)
+                        {
+                            string value = simValue.ToString().Replace("__", ":").Replace("_", " ");
+                            log += string.Format("\n- {0} {1}", simValue, value);
+
+                            simconnect.AddToDataDefinition(
+                                DEFINITIONS.GenericData,
+                                value,
+                                eventLib.GetUnit(simValue),
+                                SIMCONNECT_DATATYPE.FLOAT64,
+                                0.0f,
+                                SimConnect.SIMCONNECT_UNUSED
+                            );
+                        }
+
+                        logger.LogInformation(log);
+
+                        simconnect.RegisterDataDefineStruct<GenericValuesStruct>(DEFINITIONS.GenericData);
+
+                        isGenericValueRegistered = true;
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    logger.LogDebug("Registration is cancelled.");
+                }
+                finally
+                {
+                    smGeneric.Release();
+                }
+            });
         }
 
         private void RegisterGenericEvents()
@@ -802,7 +913,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
             foreach (var toggleAction in genericEvents)
             {
-                logger.LogInformation("RegisterEvent {1}", toggleAction);
+                logger.LogInformation("RegisterEvent {action}", toggleAction);
                 simconnect.MapClientEventToSimEvent(toggleAction, toggleAction.ToString());
             }
 
@@ -815,7 +926,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
         public void Toggle(TOGGLE_EVENT toggleAction)
         {
-            logger.LogInformation("Toggle {1}", toggleAction);
+            logger.LogInformation("Toggle {action}", toggleAction);
             SendGenericCommand(toggleAction);
         }
 

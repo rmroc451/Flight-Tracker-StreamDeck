@@ -17,8 +17,15 @@
                 <option value="Nav">Nav</option>
                 <option value="Altitude">Altitude</option>
                 <option value="VerticalSpeed">Vertical Speed</option>
+                <option value="FLC">FLC</option>
                 <option value="Approach">Approach</option>
             </select>
+        </div>
+
+        <div type="checkbox" class="sdpi-item">
+            <div class="sdpi-item-label">Hide header</div>
+            <input class="sdpi-item-value" id="HideHeader" type="checkbox">
+            <label for="HideHeader"><span></span></label>
         </div>
 
         <div type="group" class="sdpi-item" id="messagegroup">
@@ -50,6 +57,9 @@
         function loadSettings(settings) {
             if (settings['Type']) {
                 Type.value = settings['Type'];
+            };
+            if (settings['HideHeader']) {
+                HideHeader.checked = settings['HideHeader'];
             };
             if (settings['ImageOn']) {
                 setFileLabel(on_image_file_selector, settings['ImageOn']);
