@@ -20,10 +20,6 @@ namespace FlightStreamDeck.Logics.Actions
         public string SubDisplayValue { get; set; }
         public string Type { get; set; }
         public string ValuePrecision { get; set; }
-    }
-
-    public class CustomGaugeSettings: GenericGaugeSettings
-    {
         public string HeaderBottom { get; set; }
         public string DisplayValueBottom { get; set; }
         public bool DisplayHorizontalValue { get; set; }
@@ -52,7 +48,7 @@ namespace FlightStreamDeck.Logics.Actions
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.gauge")]
-    public class GenericGaugeAction : StreamDeckAction<CustomGaugeSettings>
+    public class GenericGaugeAction : StreamDeckAction<GenericGaugeSettings>
     {
         private readonly ILogger<GenericGaugeAction> logger;
         private readonly IFlightConnector flightConnector;
@@ -68,7 +64,7 @@ namespace FlightStreamDeck.Logics.Actions
         private float currentValueBottom = 0;
         private float currentSubValue = float.MinValue;
 
-        private CustomGaugeSettings settings = new CustomGaugeSettings()
+        private GenericGaugeSettings settings = new GenericGaugeSettings()
         {
             Type = "Custom",
             DisplayHorizontalValue = true,
@@ -96,7 +92,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
         {
-            InitializeSettings(args.Payload.GetSettings<CustomGaugeSettings>());
+            InitializeSettings(args.Payload.GetSettings<GenericGaugeSettings>());
 
             flightConnector.GenericValuesUpdated += FlightConnector_GenericValuesUpdated;
 
@@ -122,7 +118,7 @@ namespace FlightStreamDeck.Logics.Actions
         {
             try
             {
-                InitializeSettings(args.Payload.ToObject<CustomGaugeSettings>());
+                InitializeSettings(args.Payload.ToObject<GenericGaugeSettings>());
                 await UpdateImage();
             }
             catch (Exception e)
@@ -131,7 +127,7 @@ namespace FlightStreamDeck.Logics.Actions
             }
         }
 
-        private void InitializeSettings(CustomGaugeSettings settings)
+        private void InitializeSettings(GenericGaugeSettings settings)
         {
             this.settings = settings;
 
