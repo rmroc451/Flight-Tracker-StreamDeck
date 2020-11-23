@@ -44,11 +44,9 @@ namespace FlightStreamDeck.Logics
         void MagnetoBoth();
         void MagnetoStart();
 
-        void Toggle(TOGGLE_EVENT toggleAction);
-        void Set(SET_EVENT setAction, uint data);
+        void Trigger(TOGGLE_EVENT setAction, uint data = 0);
 
         void RegisterToggleEvent(TOGGLE_EVENT toggleAction);
-        void RegisterSetEvent(SET_EVENT action);
 
         void RegisterSimValue(TOGGLE_VALUE simValue);
         void DeRegisterSimValue(TOGGLE_VALUE simValue);
