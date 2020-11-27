@@ -281,6 +281,18 @@ namespace FlightStreamDeck.SimConnectFSX
             SendCommand(EVENTS.MAG_START);
         }
 
+        private void SendCommand(EVENTS sendingEvent, uint data = 0)
+        {
+            try
+            {
+                simconnect?.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, sendingEvent, data, GROUPID.MAX, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            }
+            catch (COMException ex) when (ex.Message == "0xC00000B0")
+            {
+                RecoverFromError(ex);
+            }
+        }
+
         private void SendGenericCommand(TOGGLE_EVENT sendingEvent, uint dwData = 0)
         {
             try
