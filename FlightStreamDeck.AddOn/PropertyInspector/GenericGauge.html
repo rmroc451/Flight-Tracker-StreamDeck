@@ -12,20 +12,40 @@
             <input class="sdpi-item-value" id="Header" value="" placeholder="Throttle" onchange="updateData()">
         </div>
         <div class="sdpi-item" type="field">
+            <div id="HideTopHeader" class="sdpi-item-label">Header Top Hide If Outside Min/Max</div>
+            <div id="HideHeader" class="sdpi-item-label">Header Hide If Outside Min/Max</div>
+            <input class="sdpi-item-value" id="HideLabelOutsideMinMaxTop" type="checkbox" onchange="updateData()">
+            <label for="HideLabelOutsideMinMaxTop"><span></span></label>
+        </div>
+        <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Toggle value</div>
             <input class="sdpi-item-value" id="ToggleValue" value="" placeholder="YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Display value</div>
-            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="YAW_DAMPER_TOGGLE" onchange="updateData()" pattern="[A-Z_]">
+            <input class="sdpi-item-value" id="DisplayValue" value="" placeholder="INDICATED_ALTITUDE" onchange="updateData()" pattern="[A-Z_]">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Sub Display value</div>
+            <input class="sdpi-item-value" id="SubDisplayValue" value="" placeholder="KOHLSMAN_SETTING_HG" onchange="updateData()" pattern="[A-Z_]">
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Minimal value</div>
             <input class="sdpi-item-value" id="MinValue" value="" placeholder="0" onchange="updateData()" pattern="[0-9.-]">
         </div>
         <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Minimal value uses Toggle Value</div>
+            <input class="sdpi-item-value" id="MinValueUsesToggleValue" type="checkbox" onchange="updateData()">
+            <label for="MinValueUsesToggleValue"><span></span></label>
+        </div>
+        <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">Maximum value</div>
             <input class="sdpi-item-value" id="MaxValue" value="" placeholder="100" onchange="updateData()" pattern="[0-9.-]">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Maximum value uses Toggle Value</div>
+            <input class="sdpi-item-value" id="MaxValueUsesToggleValue" type="checkbox" onchange="updateData()">
+            <label for="MaxValueUsesToggleValue"><span></span></label>
         </div>
         <div class="sdpi-item" type="field">
             <div class="sdpi-item-label">show arduino connected indicator?</div>
@@ -34,30 +54,119 @@
                 <option value="true">Yes</option>
             </select>
         </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Value Precision</div>
+            <input class="sdpi-item-value" id="ValuePrecision" value="" placeholder="2" onchange="updateData()" pattern="[0-9]">
+        </div>
+        <div class="sdpi-item" type="field">
+            <div class="sdpi-item-label">Type</div>
+            <select class="sdpi-item-value select" id="Type" onchange="updateData()">
+                <option value="Generic">Generic</option>
+                <option value="Custom">Custom</option>
+            </select>
+        </div>
+        <div id="customFields">
+            <div class="sdpi-heading">Custom Gauge Settings</div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Chart Split by Percentage</div>
+                <input class="sdpi-item-value" id="ChartSplitValue" placeholder="12:red,24:yellow,64:green" onchange="updateData()" pattern="[0-9,]*">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Chart Thickness</div>
+                <input class="sdpi-item-value" id="ChartThicknessValue" placeholder="13" onchange="updateData()" pattern="[0-9]*">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Chart Chevron Size</div>
+                <input class="sdpi-item-value" id="ChartChevronSizeValue" placeholder="3" onchange="updateData()" pattern="[0-9]*">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Header Bottom Hide If Outside Min/Max</div>
+                <input class="sdpi-item-value" id="HideLabelOutsideMinMaxBottom" type="checkbox" onchange="updateData()">
+                <label for="HideLabelOutsideMinMaxBottom"><span></span></label>
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Header Bottom</div>
+                <input class="sdpi-item-value" id="HeaderBottom" placeholder="R" onchange="updateData()">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Display value Bottom</div>
+                <input class="sdpi-item-value" id="DisplayValueBottom" placeholder="FUEL_RIGHT_QUANTITY" onchange="updateData()" pattern="[A-Z_]">
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Vertical Or Horizontal?</div>
+                <select class="sdpi-item-value select" id="DisplayHorizontalValue" onchange="updateData()">
+                    <option value="false">Vertical</option>
+                    <option value="true">Horizontal</option>
+                </select>
+            </div>
+            <div class="sdpi-item" type="field">
+                <div class="sdpi-item-label">Use Absolute Value for Value Text</div>
+                <select class="sdpi-item-value select" id="AbsValText" onchange="updateData()">
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                </select>
+            </div>
+        </div>
     </div>
+    
     <script src="common.js"></script>
     <script language="JavaScript" type="text/javascript">
         function loadSettings(settings) {
             if (settings['Header']) { Header.value = settings['Header'] };
+            if (settings['HeaderBottom']) { HeaderBottom.value = settings['HeaderBottom'] };
             if (settings['ToggleValue']) { ToggleValue.value = settings['ToggleValue'] };
             if (settings['DisplayValue']) { DisplayValue.value = settings['DisplayValue'] };
+            if (settings['SubDisplayValue']) { SubDisplayValue.value = settings['SubDisplayValue'] };
+            if (settings['DisplayValueBottom']) { DisplayValueBottom.value = settings['DisplayValueBottom'] };
             if (settings['MinValue']) { MinValue.value = settings['MinValue'] };
             if (settings['MaxValue']) { MaxValue.value = settings['MaxValue'] };
             if (settings['ArduinoConnectedInd']) { ArduinoConnectedInd.value = settings['ArduinoConnectedInd'] };
+            if (settings['Type']) { Type.value = settings['Type'] };
+            if (settings['DisplayHorizontalValue']) { DisplayHorizontalValue.value = settings['DisplayHorizontalValue'] };
+            if (settings['ChartSplitValue']) { ChartSplitValue.value = settings['ChartSplitValue'] };
+            if (settings['ChartThicknessValue']) { ChartThicknessValue.value = settings['ChartThicknessValue'] };
+            if (settings['ChartChevronSizeValue']) { ChartChevronSizeValue.value = settings['ChartChevronSizeValue'] };
+            if (settings['AbsValText']) { AbsValText.value = settings['AbsValText'] };
+            if (settings['ValuePrecision']) { ValuePrecision.value = settings['ValuePrecision'] };
+            if (settings['HideLabelOutsideMinMaxTop']) { HideLabelOutsideMinMaxTop.checked = settings['HideLabelOutsideMinMaxTop'] };
+            if (settings['HideLabelOutsideMinMaxBottom']) { HideLabelOutsideMinMaxBottom.checked = settings['HideLabelOutsideMinMaxBottom'] };
+            if (settings['MinValueUsesToggleValue']) { MinValueUsesToggleValue.checked = settings['MinValueUsesToggleValue'] };
+            if (settings['MaxValueUsesToggleValue']) { MaxValueUsesToggleValue.checked = settings['MaxValueUsesToggleValue'] };            
+            CustomShow()
         }
 
         function updateData() {
             const payload = {
                 "Header": Header.value,
+                "HeaderBottom": HeaderBottom.value,
                 "ToggleValue": ToggleValue.value,
                 "DisplayValue": DisplayValue.value,
+                "SubDisplayValue": SubDisplayValue.value,
+                "DisplayValueBottom": DisplayValueBottom.value,
                 "MinValue": MinValue.value,
                 "MaxValue": MaxValue.value,
-                "ArduinoConnectedInd": ArduinoConnectedInd.value
+                "ArduinoConnectedInd": ArduinoConnectedInd.value,
+                "Type": Type.value,
+                "DisplayHorizontalValue": DisplayHorizontalValue.value,
+                "ChartSplitValue": ChartSplitValue.value,
+                "ChartThicknessValue": ChartThicknessValue.value,
+                "ChartChevronSizeValue": ChartChevronSizeValue.value,
+                "AbsValText": AbsValText.value,
+                "ValuePrecision": ValuePrecision.value,
+                "HideLabelOutsideMinMaxTop": HideLabelOutsideMinMaxTop.checked,
+                "HideLabelOutsideMinMaxBottom": HideLabelOutsideMinMaxBottom.checked,
+                "MinValueUsesToggleValue": MinValueUsesToggleValue.checked,
+                "MaxValueUsesToggleValue": MaxValueUsesToggleValue.checked
             };
-
+            CustomShow();
             sendValueToPlugin(payload);
             setSettings(payload);
+        }
+
+        function CustomShow() {
+            document.getElementById("customFields").hidden = (Type.value != "Custom");
+            document.getElementById("HideTopHeader").hidden = (Type.value != "Custom");
+            document.getElementById("HideHeader").hidden = (Type.value == "Custom");
         }
     </script>
     <script src="init.js"></script>
