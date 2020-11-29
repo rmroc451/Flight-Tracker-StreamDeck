@@ -127,36 +127,21 @@ namespace FlightStreamDeck.AddOn
             try
             {
                 string readLine = arduinoPort.ReadLine();
-                if (readLine.ToUpper().StartsWith("A0:"))
+                string pin = readLine.Split(":")[0].ToUpper();
+                switch (pin)
                 {
-                    int potVal = int.Parse(readLine.Split(":")[1]);
-                    Debug.WriteLine(potVal);
-                    string value = potVal.ToString();
-                    uint data = unchecked((uint)potVal);
-                    flightConnector.TrimSetValue(data);
-                } else if (readLine.ToUpper().StartsWith("A1:"))
-                {
-                    int potVal = int.Parse(readLine.Split(":")[1]);
-                    switch (potVal)
-                    {
-                        case 0:
-                            flightConnector.MagnetoOff();
-                            break;
-                        case 1:
-                            flightConnector.MagnetoRight();
-                            break;
-                        case 2:
-                            flightConnector.MagnetoLeft();
-                            break;
-                        case 3:
-                            flightConnector.MagnetoBoth();
-                            break;
-                        case 4:
-                            flightConnector.MagnetoStart();
-                            break;
-
-                    }
-                    Debug.WriteLine(potVal);
+                    case "A0":
+                        handleA0PinUpdate(readLine);
+                        break;
+                    case "A1":
+                        handleA1PinUpdate(readLine);
+                        break;
+                    case "A2":
+                        handleA2PinUpdate(readLine);
+                        break;
+                    case "A3":
+                        handleA3PinUpdate(readLine);
+                        break;
                 }
 
             }
@@ -164,6 +149,52 @@ namespace FlightStreamDeck.AddOn
             {
                 logger.LogError(ex, "Failure in arduino message received...");
             }
+        }
+
+        private void handleA0PinUpdate(string readLine)
+        {
+            int potVal = int.Parse(readLine.Split(":")[1]);
+            Debug.WriteLine(potVal);
+            string value = potVal.ToString();
+            uint data = unchecked((uint)potVal);
+            flightConnector.TrimSetValue(data);
+        }
+
+        private void handleA1PinUpdate(string readLine)
+        {
+            int potVal = int.Parse(readLine.Split(":")[1]);
+            switch (potVal)
+            {
+                case 0:
+                    flightConnector.MagnetoOff();
+                    break;
+                case 1:
+                    flightConnector.MagnetoLeft();
+                    break;
+                case 2:
+                    flightConnector.MagnetoRight();
+                    break;
+                case 3:
+                    flightConnector.MagnetoBoth();
+                    break;
+                case 4:
+                    flightConnector.MagnetoStart();
+                    break;
+
+            }
+            Debug.WriteLine(potVal);
+        }
+
+        private void handleA2PinUpdate(string readLine)
+        {
+            bool potVal = bool.Parse(readLine.Split(":")[1]);
+            //flightConnector.TrimSetValue(data);
+        }
+
+        private void handleA3PinUpdate(string readLine)
+        {
+            bool potVal = bool.Parse(readLine.Split(":")[1]);
+            //flightConnector.TrimSetValue(data);
         }
 
         private async void SimConnect_Closed(object sender, EventArgs e)
