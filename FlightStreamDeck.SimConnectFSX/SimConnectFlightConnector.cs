@@ -35,7 +35,7 @@ namespace FlightStreamDeck.SimConnectFSX
 
         private SimConnect simconnect = null;
         private CancellationTokenSource cts = null;
-        private bool IsAutopilotOn = false;
+        private AircraftStatus aircraftStatus = null;
 
         public SimConnectFlightConnector(ILogger<SimConnectFlightConnector> logger)
         {
@@ -132,6 +132,15 @@ namespace FlightStreamDeck.SimConnectFSX
             simconnect.MapClientEventToSimEvent(EVENTS.MAG_RIGHT, "MAGNETO_RIGHT");
             simconnect.MapClientEventToSimEvent(EVENTS.MAG_BOTH, "MAGNETO_BOTH");
             simconnect.MapClientEventToSimEvent(EVENTS.MAG_START, "MAGNETO_START");
+            simconnect.MapClientEventToSimEvent(EVENTS.MASTER_BATTERY_TOGGLE, "TOGGLE_MASTER_BATTERY");
+            simconnect.MapClientEventToSimEvent(EVENTS.MASTER_ALTERNATOR_TOGGLE, "TOGGLE_MASTER_ALTERNATOR");
+            simconnect.MapClientEventToSimEvent(EVENTS.FUEL_PUMP, EVENTS.FUEL_PUMP.ToString());
+            simconnect.MapClientEventToSimEvent(EVENTS.PITOT_HEAT_TOGGLE, EVENTS.PITOT_HEAT_TOGGLE.ToString());
+            simconnect.MapClientEventToSimEvent(EVENTS.TOGGLE_BEACON_LIGHTS, EVENTS.TOGGLE_BEACON_LIGHTS.ToString());
+            simconnect.MapClientEventToSimEvent(EVENTS.LANDING_LIGHTS_TOGGLE, EVENTS.LANDING_LIGHTS_TOGGLE.ToString());
+            simconnect.MapClientEventToSimEvent(EVENTS.TOGGLE_TAXI_LIGHTS, EVENTS.TOGGLE_TAXI_LIGHTS.ToString());
+            simconnect.MapClientEventToSimEvent(EVENTS.TOGGLE_NAV_LIGHTS, EVENTS.TOGGLE_NAV_LIGHTS.ToString());
+            simconnect.MapClientEventToSimEvent(EVENTS.STROBES_TOGGLE, EVENTS.STROBES_TOGGLE.ToString());
 
             isGenericValueRegistered = false;
             RegisterGenericValues();
@@ -243,17 +252,23 @@ namespace FlightStreamDeck.SimConnectFSX
             SendCommand(EVENTS.AP_AIRSPEED_DEC);
         }
 
-        public void TrimSetValue(uint trimSet)
-        {
-            if (!IsAutopilotOn)
-            {
-                SendCommand(EVENTS.ELEV_TRIM_SET, trimSet);
-            }
-        }
-
         public void AvMasterToggle(uint state)
         {
             SendCommand(EVENTS.AVIONICS_TOGGLE, state);
+        }
+
+        public void GenericToggle(EVENTS evt, uint state)
+        {
+            SendCommand(evt, state);
+        }
+
+        #region Arduino Connectors
+        public void TrimSetValue(uint trimSet)
+        {
+            if (!aircraftStatus?.IsAutopilotOn ?? true)
+            {
+                SendCommand(EVENTS.ELEV_TRIM_SET, trimSet);
+            }
         }
 
         public void MagnetoOff()
@@ -280,6 +295,52 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             SendCommand(EVENTS.MAG_START);
         }
+
+        public void ToggleMasterBattery(bool status)
+        {
+            if (status != aircraftStatus?.IsMasterBattOn) SendCommand(EVENTS.MASTER_BATTERY_TOGGLE);
+        }
+
+        public void ToggleMasterAlternator(bool status)
+        {
+            if (status != aircraftStatus?.IsMasterAltOn) SendCommand(EVENTS.MASTER_ALTERNATOR_TOGGLE);
+        }
+
+        public void ToggleFuelPump(bool status)
+        {
+            if (status != aircraftStatus?.IsFuelPumpOn) SendCommand(EVENTS.FUEL_PUMP);
+        }
+
+        public void ToggleBeacon(bool status)
+        {
+            if (status != aircraftStatus?.IsBeaconOn) SendCommand(EVENTS.TOGGLE_BEACON_LIGHTS);
+        }
+
+        public void ToggleLanding(bool status)
+        {
+            if (status != aircraftStatus?.IsLandingLightOn) SendCommand(EVENTS.LANDING_LIGHTS_TOGGLE);
+        }
+
+        public void ToggleTaxi(bool status)
+        {
+            if (status != aircraftStatus?.IsTaxiLightOn) SendCommand(EVENTS.TOGGLE_TAXI_LIGHTS);
+        }
+
+        public void ToggleNav(bool status)
+        {
+            if (status != aircraftStatus?.IsNavLightOn) SendCommand(EVENTS.TOGGLE_NAV_LIGHTS);
+        }
+
+        public void ToggleStrobe(bool status)
+        {
+            if (status != aircraftStatus?.IsStrobeLightOn) SendCommand(EVENTS.STROBES_TOGGLE);
+        }
+
+        public void TogglePitot(bool status)
+        {
+            if (status != aircraftStatus?.IsPitotOn) SendCommand(EVENTS.PITOT_HEAT_TOGGLE);
+        }
+        #endregion
 
         private void SendCommand(EVENTS sendingEvent, uint data = 0)
         {
@@ -551,6 +612,60 @@ namespace FlightStreamDeck.SimConnectFSX
                 SIMCONNECT_DATATYPE.INT32,
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                Core.TOGGLE_VALUE.ELECTRICAL_MASTER_BATTERY.ToString().Replace("_"," "),
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                Core.TOGGLE_VALUE.GENERAL_ENG_MASTER_ALTERNATOR__1.ToString().Replace("__", ":").Replace("_", " "),
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                Core.TOGGLE_VALUE.GENERAL_ENG_FUEL_PUMP_SWITCH__1.ToString().Replace("__", ":").Replace("_", " "),
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                Core.TOGGLE_VALUE.LIGHT_BEACON.ToString().Replace("_", " "),
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                Core.TOGGLE_VALUE.LIGHT_LANDING.ToString().Replace("_", " "),
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                Core.TOGGLE_VALUE.LIGHT_TAXI.ToString().Replace("_", " "),
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                Core.TOGGLE_VALUE.LIGHT_NAV.ToString().Replace("_", " "),
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                Core.TOGGLE_VALUE.LIGHT_STROBE.ToString().Replace("_", " "),
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                Core.TOGGLE_VALUE.PITOT_HEAT.ToString().Replace("_", " "),
+                "number",
+                SIMCONNECT_DATATYPE.INT32,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
 
             // IMPORTANT: register it with the simconnect managed wrapper marshaller
             // if you skip this step, you will only receive a uint in the .dwData field.
@@ -568,44 +683,52 @@ namespace FlightStreamDeck.SimConnectFSX
 
                         if (flightStatus.HasValue)
                         {
-                            IsAutopilotOn = flightStatus.Value.IsAutopilotOn == 1;
                             logger.LogTrace("Get Aircraft status");
-                            AircraftStatusUpdated?.Invoke(this, new AircraftStatusUpdatedEventArgs(
-                                new AircraftStatus
-                                {
-                                    //SimTime = flightStatus.Value.SimTime,
-                                    //SimRate = flightStatus.Value.SimRate,
-                                    Latitude = flightStatus.Value.Latitude,
-                                    Longitude = flightStatus.Value.Longitude,
-                                    Altitude = flightStatus.Value.Altitude,
-                                    AltitudeAboveGround = flightStatus.Value.AltitudeAboveGround,
-                                    Pitch = flightStatus.Value.Pitch,
-                                    Bank = flightStatus.Value.Bank,
-                                    Heading = flightStatus.Value.MagneticHeading,
-                                    TrueHeading = flightStatus.Value.TrueHeading,
-                                    GroundSpeed = flightStatus.Value.GroundSpeed,
-                                    IndicatedAirSpeed = flightStatus.Value.IndicatedAirSpeed,
-                                    VerticalSpeed = flightStatus.Value.VerticalSpeed,
-                                    FuelTotalQuantity = flightStatus.Value.FuelTotalQuantity,
-                                    IsOnGround = flightStatus.Value.IsOnGround == 1,
-                                    StallWarning = flightStatus.Value.StallWarning == 1,
-                                    OverspeedWarning = flightStatus.Value.OverspeedWarning == 1,
-                                    IsAutopilotOn = flightStatus.Value.IsAutopilotOn == 1,
-                                    IsApHdgOn = flightStatus.Value.IsApHdgOn == 1,
-                                    ApHeading = flightStatus.Value.ApHdg,
-                                    IsApNavOn = flightStatus.Value.IsApNavOn == 1,
-                                    IsApAprOn = flightStatus.Value.IsApAprOn == 1,
-                                    IsApAltOn = flightStatus.Value.IsApAltOn == 1,
-                                    ApAltitude = flightStatus.Value.ApAlt,
-                                    IsApVsOn = flightStatus.Value.IsApVsOn == 1,
-                                    IsApFlcOn = flightStatus.Value.IsApFlcOn == 1,
-                                    ApAirspeed = flightStatus.Value.ApAirspeed,
-                                    ApVs = flightStatus.Value.ApVs,
-                                    Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),
-                                    FreqencyCom1 = flightStatus.Value.Com1,
-                                    FreqencyCom2 = flightStatus.Value.Com2,
-                                    IsAvMasterOn = flightStatus.Value.AvMasterOn == 1
-                                }));
+                            aircraftStatus = new AircraftStatus
+                            {
+                                //SimTime = flightStatus.Value.SimTime,
+                                //SimRate = flightStatus.Value.SimRate,
+                                Latitude = flightStatus.Value.Latitude,
+                                Longitude = flightStatus.Value.Longitude,
+                                Altitude = flightStatus.Value.Altitude,
+                                AltitudeAboveGround = flightStatus.Value.AltitudeAboveGround,
+                                Pitch = flightStatus.Value.Pitch,
+                                Bank = flightStatus.Value.Bank,
+                                Heading = flightStatus.Value.MagneticHeading,
+                                TrueHeading = flightStatus.Value.TrueHeading,
+                                GroundSpeed = flightStatus.Value.GroundSpeed,
+                                IndicatedAirSpeed = flightStatus.Value.IndicatedAirSpeed,
+                                VerticalSpeed = flightStatus.Value.VerticalSpeed,
+                                FuelTotalQuantity = flightStatus.Value.FuelTotalQuantity,
+                                IsOnGround = flightStatus.Value.IsOnGround == 1,
+                                StallWarning = flightStatus.Value.StallWarning == 1,
+                                OverspeedWarning = flightStatus.Value.OverspeedWarning == 1,
+                                IsAutopilotOn = flightStatus.Value.IsAutopilotOn == 1,
+                                IsApHdgOn = flightStatus.Value.IsApHdgOn == 1,
+                                ApHeading = flightStatus.Value.ApHdg,
+                                IsApNavOn = flightStatus.Value.IsApNavOn == 1,
+                                IsApAprOn = flightStatus.Value.IsApAprOn == 1,
+                                IsApAltOn = flightStatus.Value.IsApAltOn == 1,
+                                ApAltitude = flightStatus.Value.ApAlt,
+                                IsApVsOn = flightStatus.Value.IsApVsOn == 1,
+                                IsApFlcOn = flightStatus.Value.IsApFlcOn == 1,
+                                ApAirspeed = flightStatus.Value.ApAirspeed,
+                                ApVs = flightStatus.Value.ApVs,
+                                Transponder = flightStatus.Value.Transponder.ToString().PadLeft(4, '0'),
+                                FreqencyCom1 = flightStatus.Value.Com1,
+                                FreqencyCom2 = flightStatus.Value.Com2,
+                                IsAvMasterOn = flightStatus.Value.AvMasterOn == 1,
+                                IsMasterBattOn = flightStatus.Value.MasterBattOn == 1,
+                                IsMasterAltOn = flightStatus.Value.MasterAltOn == 1,
+                                IsFuelPumpOn = flightStatus.Value.FuelPumpOn == 1,
+                                IsBeaconOn = flightStatus.Value.BeaconOn == 1,
+                                IsLandingLightOn = flightStatus.Value.LandingLightsOn == 1,
+                                IsTaxiLightOn = flightStatus.Value.TaxiLightsOn == 1,
+                                IsNavLightOn = flightStatus.Value.NavLightsOn == 1,
+                                IsStrobeLightOn = flightStatus.Value.StrobeLightsOn == 1,
+                                IsPitotOn = flightStatus.Value.PitotHeatOn == 1,
+                            };
+                            AircraftStatusUpdated?.Invoke(this, new AircraftStatusUpdatedEventArgs(aircraftStatus));
                         }
                         else
                         {
@@ -678,7 +801,7 @@ namespace FlightStreamDeck.SimConnectFSX
                         cts?.Token.ThrowIfCancellationRequested();
                         simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.FLIGHT_STATUS, DEFINITIONS.FlightStatus, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
 
-                        if (genericValues.Count > 0 && isGenericValueRegistered)
+                        if ((genericValues.Count > 0 && isGenericValueRegistered) || DeckLogic.arudinoConnected)
                         {
                             simconnect?.RequestDataOnSimObjectType(DATA_REQUESTS.TOGGLE_VALUE_DATA, DEFINITIONS.GenericData, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
                         }

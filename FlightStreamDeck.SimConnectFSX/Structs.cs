@@ -59,7 +59,16 @@ namespace FlightStreamDeck.SimConnectFSX
         MAG_LEFT,
         MAG_RIGHT,
         MAG_BOTH,
-        MAG_START
+        MAG_START,
+        MASTER_BATTERY_TOGGLE,
+        MASTER_ALTERNATOR_TOGGLE,
+        FUEL_PUMP,
+        PITOT_HEAT_TOGGLE,
+        TOGGLE_BEACON_LIGHTS,
+        LANDING_LIGHTS_TOGGLE,
+        TOGGLE_TAXI_LIGHTS,
+        TOGGLE_NAV_LIGHTS,
+        STROBES_TOGGLE
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
@@ -117,6 +126,15 @@ namespace FlightStreamDeck.SimConnectFSX
         public int Com1;
         public int Com2;
         public int AvMasterOn;
+        public int MasterBattOn;
+        public int MasterAltOn;
+        public int FuelPumpOn;
+        public int BeaconOn;
+        public int LandingLightsOn;
+        public int TaxiLightsOn;
+        public int NavLightsOn;
+        public int StrobeLightsOn;
+        public int PitotHeatOn;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]

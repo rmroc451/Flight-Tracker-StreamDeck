@@ -1,6 +1,7 @@
 ﻿using FlightStreamDeck.Core;
 using System;
 using System.Collections.Generic;
+using FlightStreamDeck.Logics;
 
 namespace FlightStreamDeck.Logics
 {
@@ -43,6 +44,15 @@ namespace FlightStreamDeck.Logics
         void MagnetoRight();
         void MagnetoBoth();
         void MagnetoStart();
+        void ToggleMasterBattery(bool status);
+        void ToggleMasterAlternator(bool status);
+        void ToggleFuelPump(bool status);
+        void ToggleBeacon(bool status);
+        void ToggleLanding(bool status);
+        void ToggleTaxi(bool status);
+        void ToggleNav(bool status);
+        void ToggleStrobe(bool status);
+        void TogglePitot(bool status);
 
         void Trigger(TOGGLE_EVENT setAction, uint data = 0);
 
@@ -127,5 +137,14 @@ namespace FlightStreamDeck.Logics
         public int FreqencyCom1 { get; set; }
         public int FreqencyCom2 { get; set; }
         public bool IsAvMasterOn { get; set; }
+        public bool IsMasterAltOn { get; set; }
+        public bool IsMasterBattOn { get; set; }
+        public bool IsFuelPumpOn { get; set; }
+        public bool IsBeaconOn { get; set; }
+        public bool IsLandingLightOn { get; set; }
+        public bool IsTaxiLightOn { get; set; }
+        public bool IsNavLightOn { get; set; }
+        public bool IsStrobeLightOn { get; set; }
+        public bool IsPitotOn { get; set; }
     }
 }
