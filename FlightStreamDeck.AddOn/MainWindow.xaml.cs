@@ -109,6 +109,7 @@ namespace FlightStreamDeck.AddOn
         {
             try
             {
+                logger.LogDebug($"connecting arduino: {arduinoPort.PortName}");
                 arduinoPortOpen();
                 DeckLogic.arudinoConnected = true;
                 arduinoPort.DataReceived += arduinoPort_DataReceived;
@@ -131,36 +132,47 @@ namespace FlightStreamDeck.AddOn
             try
             {
                 string readLine = arduinoPort.ReadLine();
-                if (readLine.ToUpper().StartsWith("A0:"))
+                logger.LogDebug($"arduino DataReceived: {readLine}");
+                string pin = readLine.Split(":")[0].ToUpper();
+                switch (pin)
                 {
-                    int potVal = int.Parse(readLine.Split(":")[1]);
-                    Debug.WriteLine(potVal);
-                    string value = potVal.ToString();
-                    uint data = unchecked((uint)potVal);
-                    flightConnector.TrimSetValue(data);
-                } else if (readLine.ToUpper().StartsWith("A1:"))
-                {
-                    int potVal = int.Parse(readLine.Split(":")[1]);
-                    switch (potVal)
-                    {
-                        case 0:
-                            flightConnector.MagnetoOff();
-                            break;
-                        case 1:
-                            flightConnector.MagnetoLeft();
-                            break;
-                        case 2:
-                            flightConnector.MagnetoRight();
-                            break;
-                        case 3:
-                            flightConnector.MagnetoBoth();
-                            break;
-                        case 4:
-                            flightConnector.MagnetoStart();
-                            break;
-
-                    }
-                    Debug.WriteLine(potVal);
+                    case "A0":
+                        handleA0PinUpdate(readLine);
+                        break;
+                    case "A1":
+                        handleA1PinUpdate(readLine);
+                        break;
+                    case "A2":
+                        handleA2PinUpdate(readLine.Replace("\r",""));
+                        break;
+                    case "A3":
+                        handleA3PinUpdate(readLine.Replace("\r", ""));
+                        break;
+                    case "A4":
+                        handleA4PinUpdate(readLine.Replace("\r", ""));
+                        break;
+                    case "A5":
+                        handleA5PinUpdate(readLine.Replace("\r", ""));
+                        break;
+                    case "A6":
+                        handleA6PinUpdate(readLine.Replace("\r", ""));
+                        break;
+                    case "A7":
+                        handleA7PinUpdate(readLine.Replace("\r", ""));
+                        break;
+                    case "A8":
+                        handleA8PinUpdate(readLine.Replace("\r", ""));
+                        break;
+                    case "A9":
+                        handleA9PinUpdate(readLine.Replace("\r", ""));
+                        break;
+                    case "A10":
+                        handleA10PinUpdate(readLine.Replace("\r", ""));
+                        break;
+                    case "A11":
+                    case "A12":
+                        handleA11PinUpdate(readLine.Replace("\r", ""));
+                        break;
                 }
 
             }
@@ -168,6 +180,91 @@ namespace FlightStreamDeck.AddOn
             {
                 logger.LogError(ex, "Failure in arduino message received...");
             }
+        }
+
+        private void handleA0PinUpdate(string readLine)
+        {
+            int potVal = int.Parse(readLine.Split(":")[1])*-1;
+            Debug.WriteLine(potVal);
+            string value = potVal.ToString();
+            uint data = unchecked((uint)potVal);
+            flightConnector.TrimSetValue(data);
+        }
+
+        private void handleA1PinUpdate(string readLine)
+        {
+            int potVal = int.Parse(readLine.Split(":")[1]);
+            switch (potVal)
+            {
+                case 0:
+                    flightConnector.MagnetoOff();
+                    break;
+                case 1:
+                    flightConnector.MagnetoRight();
+                    break;
+                case 2:
+                    flightConnector.MagnetoLeft();
+                    break;
+                case 3:
+                    flightConnector.MagnetoBoth();
+                    break;
+                case 4:
+                    flightConnector.MagnetoStart();
+                    break;
+
+            }
+            Debug.WriteLine(potVal);
+        }
+
+        private void handleA2PinUpdate(string readLine)
+        {
+            flightConnector.ToggleMasterAlternator(readLine.Split(":")[2] =="1");
+        }
+
+        private void handleA3PinUpdate(string readLine)
+        {
+            flightConnector.ToggleMasterBattery(readLine.Split(":")[2] =="1");
+        }
+
+        private void handleA4PinUpdate(string readLine)
+        {
+            flightConnector.ToggleFuelPump(readLine.Split(":")[2] =="1");
+        }
+
+        private void handleA5PinUpdate(string readLine)
+        {
+            flightConnector.ToggleBeacon(readLine.Split(":")[2] =="1");
+        }
+
+        private void handleA6PinUpdate(string readLine)
+        {
+            flightConnector.ToggleLanding(readLine.Split(":")[2] =="1");
+        }
+
+        private void handleA7PinUpdate(string readLine)
+        {
+            flightConnector.ToggleTaxi(readLine.Split(":")[2] =="1");
+        }
+
+        private void handleA8PinUpdate(string readLine)
+        {
+            flightConnector.ToggleNav(readLine.Split(":")[2] =="1");
+        }
+
+        private void handleA9PinUpdate(string readLine)
+        {
+            flightConnector.ToggleStrobe(readLine.Split(":")[2] =="1");
+        }
+
+        private void handleA10PinUpdate(string readLine)
+        {
+            flightConnector.TogglePitot(readLine.Split(":")[2] =="1");
+        }
+
+        private void handleA11PinUpdate(string readLine)
+        {
+            int potVal = int.Parse(readLine.Split(":")[1]);
+            flightConnector.AvMasterToggle((uint)potVal);
         }
 
         private void SimConnect_Closed(object sender, EventArgs e)
