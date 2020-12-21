@@ -54,7 +54,6 @@ namespace FlightStreamDeck.SimConnectFSX
         AP_AIRSPEED_INC,
         AP_AIRSPEED_DEC,
         AVIONICS_TOGGLE,
-        AVIONICS_TOGGLE,
         ELEV_TRIM_SET,
         MAG_OFF,
         MAG_LEFT,
