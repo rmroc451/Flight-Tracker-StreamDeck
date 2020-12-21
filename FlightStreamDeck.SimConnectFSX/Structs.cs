@@ -54,6 +54,7 @@ namespace FlightStreamDeck.SimConnectFSX
         AP_AIRSPEED_INC,
         AP_AIRSPEED_DEC,
         AVIONICS_TOGGLE,
+        AVIONICS_TOGGLE,
         ELEV_TRIM_SET,
         MAG_OFF,
         MAG_LEFT,
@@ -126,6 +127,9 @@ namespace FlightStreamDeck.SimConnectFSX
         public int Com1;
         public int Com2;
         public int AvMasterOn;
+        public double Nav1OBS;
+        public double Nav2OBS;
+        public double ADFCard;
         public int MasterBattOn;
         public int MasterAltOn;
         public int FuelPumpOn;

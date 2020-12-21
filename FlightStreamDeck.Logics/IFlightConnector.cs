@@ -63,6 +63,7 @@ namespace FlightStreamDeck.Logics
         
         void RegisterSimValues(params TOGGLE_VALUE[] simValues);
         void DeRegisterSimValues(params TOGGLE_VALUE[] simValues);
+        void GenericSet(TOGGLE_EVENT evt, uint data);
     }
 
     public class AircraftStatusUpdatedEventArgs : EventArgs
@@ -137,6 +138,9 @@ namespace FlightStreamDeck.Logics
         public int FreqencyCom1 { get; set; }
         public int FreqencyCom2 { get; set; }
         public bool IsAvMasterOn { get; set; }
+        public double Nav1OBS { get; set; }
+        public double Nav2OBS { get; set; }
+        public double ADFCard { get; set; }
         public bool IsMasterAltOn { get; set; }
         public bool IsMasterBattOn { get; set; }
         public bool IsFuelPumpOn { get; set; }

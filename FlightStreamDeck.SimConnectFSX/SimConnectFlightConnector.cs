@@ -336,6 +336,11 @@ namespace FlightStreamDeck.SimConnectFSX
             if (status != aircraftStatus?.IsStrobeLightOn) SendCommand(EVENTS.STROBES_TOGGLE);
         }
 
+        public void GenericSet(TOGGLE_EVENT evt, uint data)
+        {
+            SendGenericCommand(evt, data);
+        }
+
         public void TogglePitot(bool status)
         {
             if (status != aircraftStatus?.IsPitotOn) SendCommand(EVENTS.PITOT_HEAT_TOGGLE);
@@ -613,6 +618,24 @@ namespace FlightStreamDeck.SimConnectFSX
                 0.0f,
                 SimConnect.SIMCONNECT_UNUSED);
             simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "NAV OBS:1",
+                "Degrees",
+                SIMCONNECT_DATATYPE.FLOAT64,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "NAV OBS:2",
+                "Degrees",
+                SIMCONNECT_DATATYPE.FLOAT64,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
+                "ADF CARD",
+                "Degrees",
+                SIMCONNECT_DATATYPE.FLOAT64,
+                0.0f,
+                SimConnect.SIMCONNECT_UNUSED);
+            simconnect.AddToDataDefinition(DEFINITIONS.FlightStatus,
                 Core.TOGGLE_VALUE.ELECTRICAL_MASTER_BATTERY.ToString().Replace("_"," "),
                 "number",
                 SIMCONNECT_DATATYPE.INT32,
@@ -727,6 +750,9 @@ namespace FlightStreamDeck.SimConnectFSX
                                 IsNavLightOn = flightStatus.Value.NavLightsOn == 1,
                                 IsStrobeLightOn = flightStatus.Value.StrobeLightsOn == 1,
                                 IsPitotOn = flightStatus.Value.PitotHeatOn == 1,
+                                Nav1OBS = flightStatus.Value.Nav1OBS,
+                                Nav2OBS = flightStatus.Value.Nav2OBS,
+                                ADFCard = flightStatus.Value.ADFCard,
                             };
                             AircraftStatusUpdated?.Invoke(this, new AircraftStatusUpdatedEventArgs(aircraftStatus));
                         }
