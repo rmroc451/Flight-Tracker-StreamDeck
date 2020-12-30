@@ -7,6 +7,7 @@ using SharpDeck.Events.Received;
 using SharpDeck.Manifest;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
@@ -24,7 +25,7 @@ namespace FlightStreamDeck.Logics.Actions
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
     public class NavComAction : StreamDeckAction<NavComSettings>
     {
-        private const int HOLD_DURATION_MILLISECONDS = 1000;
+        private const int HOLD_DURATION_MILLISECONDS = 500;
         private const string minNavVal = "10800";
         private const string maxNavVal = "11795";
         private const string minComVal = "11800";
@@ -39,6 +40,9 @@ namespace FlightStreamDeck.Logics.Actions
         private readonly EnumConverter enumConverter;
 
         private readonly Timer timer;
+
+        private readonly Timer multiPushTimer;
+        private int multiPushCount = 0;
 
         private IdentifiableDeviceInfo device;
 
@@ -63,6 +67,8 @@ namespace FlightStreamDeck.Logics.Actions
             this.enumConverter = enumConverter;
             timer = new Timer { Interval = HOLD_DURATION_MILLISECONDS };
             timer.Elapsed += Timer_Elapsed;
+            multiPushTimer = new Timer { Interval = HOLD_DURATION_MILLISECONDS };
+            multiPushTimer.Elapsed += MultiPushTimer_Elapsed;
         }
 
         private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -78,6 +84,33 @@ namespace FlightStreamDeck.Logics.Actions
             {
                 SwapFrequencies();
             }
+        }
+
+        private async void MultiPushTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            multiPushTimer.Stop();
+
+            switch (multiPushCount)
+            {
+                case 2:
+                    foreach (var process in Process.GetProcessesByName("vlc"))
+                    {
+                        process.Kill();
+                    }
+                    nonMultiPressAction = null;
+                    break;
+                default:
+                    if (nonMultiPressAction != null)
+                    {
+                        nonMultiPressAction.Start();
+
+                        await nonMultiPressAction;
+                        nonMultiPressAction = null;
+                    }
+                    break;
+            }
+
+            multiPushCount = 0;
         }
 
         protected override async Task OnWillAppear(ActionEventArgs<AppearancePayload> args)
@@ -113,10 +146,13 @@ namespace FlightStreamDeck.Logics.Actions
                 {
                     this.device = device;
                     timer.Start();
+                    multiPushTimer.Start();
                 }
             }
             return Task.CompletedTask;
         }
+
+        private Task nonMultiPressAction;
 
         protected override Task OnKeyUp(ActionEventArgs<KeyPayload> args)
         {
@@ -127,15 +163,22 @@ namespace FlightStreamDeck.Logics.Actions
                 {
                     timer.Stop();
 
-                    // Click
-                    if (settings.HoldFunction != "Swap")
-                    {
-                        SwapFrequencies();
-                    }
-                    else
-                    {
-                        return SwitchToNumpad();
-                    }
+                    nonMultiPressAction = new Task(async () => {
+                        // Click
+                        if (settings.HoldFunction != "Swap")
+                        {
+                            SwapFrequencies();
+                        }
+                        else
+                        {
+                            await SwitchToNumpad();
+                        }
+                    });
+                }
+
+                if (multiPushTimer.Enabled)
+                {
+                    multiPushCount++;
                 }
             }
             return Task.CompletedTask;
