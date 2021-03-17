@@ -36,6 +36,15 @@ namespace FlightStreamDeck.AddOn
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             this.Hide();
+
+            if (Environment.GetCommandLineArgs().Length <= 1)
+            {
+                MessageBox.Show($"This plugin must be launched by Stream Deck software!\nPlease install it properly by double clicking the .streamDeckPlugin file or find it in Stream Deck's More Actions.",
+                    "Flight Tracker", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Shutdown();
+                return;
+            }
+
             deckLogic.Initialize();
 
             // Initialize SimConnect
@@ -46,7 +55,7 @@ namespace FlightStreamDeck.AddOn
                 // Create an event handle for the WPF window to listen for SimConnect events
                 Handle = new WindowInteropHelper(sender as Window).Handle; // Get handle of main WPF Window
                 var HandleSource = HwndSource.FromHwnd(Handle); // Get source of handle in order to add event handlers to it
-                HandleSource.AddHook(simConnect.HandleSimConnectEvents);
+                HandleSource.AddHook(HandleSimConnectHook);
 
                 //var viewModel = ServiceProvider.GetService<MainViewModel>();
 
@@ -81,6 +90,19 @@ namespace FlightStreamDeck.AddOn
 
                     App.Current.Shutdown(-1);
                 }
+            }
+        }
+
+        private IntPtr HandleSimConnectHook(IntPtr hWnd, int message, IntPtr wParam, IntPtr lParam, ref bool isHandled)
+        {
+            try
+            {
+                (flightConnector as SimConnectFlightConnector).HandleSimConnectEvents(message, ref isHandled);
+                return IntPtr.Zero;
+            }
+            catch (BadImageFormatException)
+            {
+                return IntPtr.Zero;
             }
         }
 

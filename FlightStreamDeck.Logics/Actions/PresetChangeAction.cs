@@ -36,6 +36,7 @@ namespace FlightStreamDeck.Logics.Actions
         public const string VOR1 = "VOR1";
         public const string VOR2 = "VOR2";
         public const string ADF = "ADF";
+        public const string QNH = "QNH";
     }
 
     public class ValueChangeSettings
@@ -64,6 +65,7 @@ namespace FlightStreamDeck.Logics.Actions
             this.flightConnector.RegisterToggleEvent(Core.TOGGLE_EVENT.VOR1_SET);
             this.flightConnector.RegisterToggleEvent(Core.TOGGLE_EVENT.VOR2_SET);
             this.flightConnector.RegisterToggleEvent(Core.TOGGLE_EVENT.ADF_SET);
+            this.flightConnector.RegisterToggleEvent(Core.TOGGLE_EVENT.KOHLSMAN_SET);
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -104,6 +106,8 @@ namespace FlightStreamDeck.Logics.Actions
                 ValueChangeFunction.VOR1 => (uint)status.Nav1OBS,
                 ValueChangeFunction.VOR2 => (uint)status.Nav2OBS,
                 ValueChangeFunction.ADF => (uint)status.ADFCard,
+                ValueChangeFunction.QNH => (uint)status.QNHMbar,
+
                 _ => throw new NotImplementedException($"Value type: {buttonType}")
             };
 
@@ -136,14 +140,18 @@ namespace FlightStreamDeck.Logics.Actions
                         ChangeVerticalSpeed(sign);
                     }
                     break;
+                case ValueChangeFunction.QNH:
+                    double newValue = (double)originalValue + (sign * increment * 50);  // Value is in nanobar, increment per 50 nanobar (0.5 mbar)
+                    flightConnector.QNHSet((uint)(newValue * .16));                     // Custom factor of 16, because SimConnect ;)
+                    break;
                 case ValueChangeFunction.VOR1:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR1_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.GenericSet(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR1_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
                     break;
                 case ValueChangeFunction.VOR2:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR2_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.GenericSet(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.VOR2_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
                     break;
                 case ValueChangeFunction.ADF:
-                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.ADF_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.GenericSet(evt.Value, value.Value); });
+                    ChangeSphericalValue(sign, increment, Core.TOGGLE_EVENT.ADF_SET, (uint? value, Core.TOGGLE_EVENT? evt) => { flightConnector.Trigger(evt.Value, value.Value); });
                     break;
 
             }

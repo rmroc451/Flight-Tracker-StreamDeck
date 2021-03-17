@@ -35,13 +35,24 @@ However, with great power comes great responsibility: you have to do a bit of se
 |-----------|-------------|---------|
 | Title | This is the built-in title of any Stream Deck button. We hide this by default. You should consider using the next parameter instead. | *Empty* |
 | Header | This is similar to title but with a pre-defined font, size and position that looks nice on the button. | HDG |
-| Toggle event | The SimConnect event that triggers when the button is tapped on.<br />You can find the supporting event ID in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination of each ID can be found in [Prepar3D SDK - Event IDs](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/event_ids.html) or MSFS SDK docs. | KEY_AP_PANEL_HEADING_HOLD |
-| Toggle parameter | The parameter to pass along with the event | 1 |
-| Feedback value | The SimConnect variable that indicates if the button is *active* or not. Active state will show a green light or a green number (if `Display value` below is set) on the button.<br />You can find the supporting variables in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination for each variable can be found in [Prepar3D SDK - Simulation Variables](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/simulation_variables.html) or MSFS SDK docs.<br />You can also use some comparison operators such as "==", "!=", ">", "<", ">=", "<=" between a variable and a value or between 2 variables. | AUTOPILOT HEADING LOCK<br />FLAPS HANDLE INDEX==2 |
-| Display value | The SimConnect variable (any numeric unit) to display as a number below the header.<br />You can find the supporting variables in [FlightStreamDeckCore/Structs.cs](/FlightStreamDeck.Core/Structs.cs). Explaination for each variable can be found in [Prepar3D SDK - Simulation Variables](http://www.prepar3d.com/SDKv2/LearningCenter/utilities/variables/simulation_variables.html) or MSFS SDK docs.  | AUTOPILOT HEADING LOCK DIR |
+| Toggle event | The SimConnect event that triggers when the button is tapped on.<br />You can find the supporting event ID in [FlightStreamDeck.Core/TOGGLE_EVENT.cs](/FlightStreamDeck.Core/TOGGLE_EVENT.cs). Explanation of each ID can be found in [Legacy Event IDs](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Legacy_Event_IDs.htm). | AP_PANEL_HEADING_HOLD |
+| Toggle parameter | The parameter to pass along with the event. This can be a number or a SimConnect variable. If using a variable, the value of the variable will be passed to the event. | 1 <BR/> PLANE HEADING DEGREES MAGNETIC |
+| Hold event & parameter | Similar to Toggle event & parameter, but will trigger when you hold the button. | |
+| Feedback value | The SimConnect variable that indicates if the button is *active* or not. Active state will show a green light or a green number (if `Display value` below is set) on the button.<br />You can find the supporting variables in [FlightStreamDeck.Core/TOGGLE_VALUE.cs](/FlightStreamDeck.Core/TOGGLE_VALUE.cs). Explanation for each variable can be found in [Aircraft Simulation Variables](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_Simulation_Variables.htm).<br />You can also use some comparison operators such as "==", "!=", ">", "<", ">=", "<=" between a variable and a value or between 2 variables. | AUTOPILOT HEADING LOCK<br />FLAPS HANDLE INDEX==2 |
+| Display value | The SimConnect variable (any numeric unit) to display as a number below the header.<br />You can find the supporting variables in [FlightStreamDeckCore/TOGGLE_VALUE.cs](/FlightStreamDeck.Core/TOGGLE_VALUE.cs). Explanation for each variable can be found in [Aircraft Simulation Variables](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_Simulation_Variables.htm).  | AUTOPILOT HEADING LOCK DIR |
 
-This button allows you to choose custom button images for active and inactive states. 
-The image should be of size 72x72 pixel (or 144x144 for higher res decks) and should be in PNG format.
+This button allows you to choose custom button images for active and inactive states. Please check out Custom images section below for more details.
+
+Example generic toggle button that displays the current value of the autopilot heading bug, and syncs the heading bug with the aircraft's current heading when pushed:
+
+| Parameter | Value |
+|-----------|-------|
+| Title | *Empty* |
+| Header | HDG |
+| Toggle event | HEADING_BUG_SET |
+| Toggle parameter | PLANE HEADING DEGREES MAGNETIC |
+| Feedback value | *Empty* |
+| Display value | AUTOPILOT HEADING LOCK DIR |
 
 ##### Preset Toggle Button
 
@@ -92,16 +103,38 @@ This button is very similar to Generic Toggle Button except from it does not hav
 
 ![Sample NAV/COM buttons](sample_custom_gauge.png)
 
-- `Minimal value` and `Maximum value` are compulsory, indicating the range of the `Display value`.
-- Having a `Minimal value` greater than the `Maximum value` will flip the way the value resolves on the graph (see two trim gauges above).
-- You may enter `Use Absolute Value for Value Text` on a `custom` type gauge, which will display the value without a negative if one would show up (right column trim gauges, for example).
-- The gauge may be cusom color coded, and knows basic colors from [system.drawing.colors](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.color?view=net-5.0#properties).
+There are 2 types of generic gauge at the moment: Simple and Custom. Simple allows you to display a value in an arc gauge while Custom allows you to display up to 2 values with customizable colors.
+
+###### Common Parameters
+
+- `Minimum` and `Maximum` indicate the range of the `Display value`. You can input a number or a SimConnect variable in those fields.
+
+###### Notes for Simple Gauge
+
+- `Sub value` shows a small number below the main display value.  In my example for Indicated Altitude, the inches of MG displayed by adding `KOHLSMAN_SETTING_HG` to this setting.
+
+###### Notes for Custom Gauge
+
+- Having a `Minimum` greater than the `Maximum value` will flip the way the value resolves on the graph (see two trim gauges above).
+- Setting `Display absolute value` to 'Yes' will display the value without a negative sign (e.g. right column trim gauges).
+- The gauge may be cusom color coded, and knows basic colors from [System.Drawing.Colors](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.color?view=net-5.0#properties).
   - The default custom gauge that displays is color coded like the fuel gauge and has all the properties in it for a generic 2 tank aircraft.
-- You can adjust the thickness of the bar by adjusting `Chart Thickness` in the custom 
-section.
-- You can adjust the chevron size by adjusting `Chart Chevron Size` in the custom section.
-- If you do not specify a header for a value in the top or bottom, it won't show that respective value or chevron.  If you want a blank chevron, simply put a blank space in, it will recognize that.
-- There is now a concept of a `Sub Display value`.  In my example for Indicated Altitude, the inches of MG displayed by adding `KOHLSMAN_SETTING_HG` to that setting.
+- `Chevron Size` and `Thickness` allows you to further customize the display.
+- If you do not input `Header` or `Bottom Header`, the respective value and chevron won't show up.  If you want a blank chevron, simply put a blank space in header fields.
+
+#### Custom Images
+
+Custom active/inactive images should be of size 72x72 pixel (or 144x144 for Stream Deck XL) and should be in PNG format.
+There are 2 ways to use custom images in the plugins.
+
+| Embed | Link |
+|-------|------|
+| The whole image is stored in the profile. | The path to the image is stored in the profile. |
+| Profile export with custom images works on any PCs. | The importing PCs need to have the custom images in the same folder. |
+| Needs to have the original image or to change back to Link mode to edit | Is easier to edit the image and immediately see the change |
+| Profile is heavier and might reach some limitation of Stream Deck. | Profile is very light. |
+
+The plugin also allows you to switch between the 2 modes by clicking on the other mode and click OK on the prompt.
 
 ### MobiFlight WASM Module Integration
 
@@ -122,13 +155,12 @@ Here are the steps that you need to do to get access to the new events:
 7. There should now be a "MSFS2020-module" folder, open that folder.
 8. Copy the "mobiflight-event-module" folder to your MSFS community folder.
 9. Relaunch MSFS 2020
-10. Configure Flight-Stream-Deck with [newly supported events](https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck/blob/master/FlightStreamDeck.Core/Structs.cs#L1317), courtesy of MobiFlight!  They are like the normal SDK events, except the wasm module in the community folder interacts with the gauges/instruments directly when receiving them.
+10. Configure Flight-Stream-Deck with [newly supported events](/FlightStreamDeck.Core/TOGGLE_EVENT.cs#L773), courtesy of MobiFlight!  They are like the normal SDK events, except the wasm module in the community folder interacts with the gauges/instruments directly when receiving them.
 
 We've included a quick GNS 530 example for the knobs and basic buttons [here](https://github.com/nguyenquyhy/Flight-Tracker-StreamDeck/tree/master/Assets/Starter%20Profiles/MobiFlight-GNS-530.streamDeckProfile)
 
 ### Known Issues
 
-- At the moment, the customm images are stored as absolute path to the image files, so it is not very user friendly for exporting and importing to another PC. We are working on image embedding feature for future updates.
 - If you spam the same buttons too quickly, SimConnect will get error and stop responding to any further command. The plugin will try to automatically reconnect. 
   - However, if you see the message "Connected to Flight Simulator" flashing constantly in the sim, the plugin might be in a infinitely retry loop. In this case, close Stream Deck software on your PC (which will kill the plugin), wait a couple of seconds for all the SimConnect connections to close, and re-open Stream Deck.
 - When you setup new generic buttons or COM/NAV button, the registration between the plugin and SimConnect might get messed up and the plugin stops receiving data. In this case, you'll need to restart Stream Deck software.

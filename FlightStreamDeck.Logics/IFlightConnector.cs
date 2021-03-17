@@ -36,6 +36,9 @@ namespace FlightStreamDeck.Logics
         void ApAirSpeedSet(uint speed);
         void ApAirSpeedInc();
         void ApAirSpeedDec();
+        void QNHSet(uint qnh);
+        void QNHInc();
+        void QNHDec();
 
         void TrimSetValue(uint trimSet);
         void AvMasterToggle(uint state);
@@ -58,11 +61,8 @@ namespace FlightStreamDeck.Logics
 
         void RegisterToggleEvent(TOGGLE_EVENT toggleAction);
 
-        void RegisterSimValue(TOGGLE_VALUE simValue);
-        void DeRegisterSimValue(TOGGLE_VALUE simValue);
-        
-        void RegisterSimValues(params TOGGLE_VALUE[] simValues);
-        void DeRegisterSimValues(params TOGGLE_VALUE[] simValues);
+        void RegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues);
+        void DeRegisterSimValues(params (TOGGLE_VALUE variables, string unit)[] simValues);
         void GenericSet(TOGGLE_EVENT evt, uint data);
     }
 
@@ -78,12 +78,12 @@ namespace FlightStreamDeck.Logics
 
     public class ToggleValueUpdatedEventArgs : EventArgs
     {
-        public ToggleValueUpdatedEventArgs(Dictionary<TOGGLE_VALUE, string> toggleValueStatus)
+        public ToggleValueUpdatedEventArgs(Dictionary<(TOGGLE_VALUE variable, string unit), double> genericValueStatus)
         {
-            GenericValueStatus = toggleValueStatus;
+            GenericValueStatus = genericValueStatus;
         }
 
-        public Dictionary<TOGGLE_VALUE, string> GenericValueStatus { get; }
+        public Dictionary<(TOGGLE_VALUE variable, string unit), double> GenericValueStatus { get; }
     }
 
     public class AircraftStatus
@@ -133,6 +133,8 @@ namespace FlightStreamDeck.Logics
 
         public bool IsApFlcOn { get; set; }
         public int ApAirspeed { get; set; }
+
+        public int QNHMbar { get; set; }
 
         public string Transponder { get; set; }
         public int FreqencyCom1 { get; set; }

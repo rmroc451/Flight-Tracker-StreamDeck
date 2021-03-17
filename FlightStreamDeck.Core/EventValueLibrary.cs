@@ -1,16 +1,25 @@
-﻿using FlightStreamDeck.Core;
-using Microsoft.FlightSimulator.SimConnect;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace FlightStreamDeck.SimConnectFSX
+namespace FlightStreamDeck.Core
 {
-    class EventValueLibrary
+    public static class EventValueLibrary
     {
-        private const string DEFAULT_UNIT = "number";
-        private const int DEFAULT_DECIMALS = 0;
+        struct ValueEntry
+        {
+            public ValueEntry(string unit, short decimals)
+            {
+                Unit = unit;
+                Decimals = decimals;
+            }
 
-        private static Dictionary<TOGGLE_VALUE, ValueEntry> availableValues = new Dictionary<TOGGLE_VALUE, ValueEntry>()
+            public string Unit;
+            public int Decimals;
+        }
+
+        const string DEFAULT_UNIT = "number";
+        const int DEFAULT_DECIMALS = 0;
+
+        static Dictionary<TOGGLE_VALUE, ValueEntry> availableValues = new Dictionary<TOGGLE_VALUE, ValueEntry>()
         {
             { TOGGLE_VALUE.THROTTLE_LOWER_LIMIT, new ValueEntry("Percent", 2) },
             { TOGGLE_VALUE.GENERAL_ENG_RPM__1, new ValueEntry("Rpm", 1) },
@@ -165,6 +174,7 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.LEADING_EDGE_FLAPS_RIGHT_PERCENT, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.AILERON_LEFT_DEFLECTION_PCT, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.AILERON_RIGHT_DEFLECTION_PCT, new ValueEntry("Percent", 0) },
+            { TOGGLE_VALUE.AILERON_TRIM, new ValueEntry("Radians", 2) },
             { TOGGLE_VALUE.AILERON_TRIM_PCT, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.RUDDER_DEFLECTION_PCT, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.RUDDER_TRIM_PCT, new ValueEntry("Percent", 0) },
@@ -332,25 +342,56 @@ namespace FlightStreamDeck.SimConnectFSX
             { TOGGLE_VALUE.TURB_ENG_PRIMARY_NOZZLE_PERCENT__2, new ValueEntry("Percent", 0) },
             { TOGGLE_VALUE.NAV_OBS__1, new ValueEntry("Degrees", 0) },
             { TOGGLE_VALUE.NAV_OBS__2, new ValueEntry("Degrees", 0) },
+            { TOGGLE_VALUE.NAV_DME__1, new ValueEntry("Nautical miles", 1) },
+            { TOGGLE_VALUE.NAV_DME__2, new ValueEntry("Nautical miles", 1) },
+            { TOGGLE_VALUE.NAV_DMESPEED__1, new ValueEntry("Knots", 0) },
+            { TOGGLE_VALUE.NAV_DMESPEED__2, new ValueEntry("Knots", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_COWL_FLAP_POSITION__1, new ValueEntry("Percent", 2) },
+            { TOGGLE_VALUE.TURN_COORDINATOR_BALL, new ValueEntry("Position 128", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_MANIFOLD_PRESSURE__1, new ValueEntry("Psi", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_MANIFOLD_PRESSURE__2, new ValueEntry("Psi", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_MANIFOLD_PRESSURE__3, new ValueEntry("Psi", 0) },
+            { TOGGLE_VALUE.RECIP_ENG_MANIFOLD_PRESSURE__4, new ValueEntry("Psi", 0) },
+            { TOGGLE_VALUE.TURB_ENG_JET_THRUST__1, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.TURB_ENG_JET_THRUST__2, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.TURB_ENG_JET_THRUST__3, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.TURB_ENG_JET_THRUST__4, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.PROP_THRUST__1, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.PROP_THRUST__2, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.PROP_THRUST__3, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.PROP_THRUST__4, new ValueEntry("Pounds", 2) },
+            { TOGGLE_VALUE.PROP_RPM__1, new ValueEntry("Rpm", 1) },
+            { TOGGLE_VALUE.PROP_RPM__2, new ValueEntry("Rpm", 1) },
+            { TOGGLE_VALUE.PROP_RPM__3, new ValueEntry("Rpm", 1) },
+            { TOGGLE_VALUE.PROP_RPM__4, new ValueEntry("Rpm", 1) },
         };
 
-        public EventValueLibrary()
+        public static string GetUnit(this TOGGLE_VALUE value, string unit)
         {
+            if (!string.IsNullOrEmpty(unit))
+            {
+                // TODO: add some validation
+                return unit;
+            }
+            else if (availableValues.ContainsKey(value))
+            {
+                return availableValues[value].Unit;
+            }
+            return DEFAULT_UNIT;
         }
 
-        public bool isSpecial(TOGGLE_VALUE value)
+        public static int GetDecimals(this TOGGLE_VALUE value, int? decimals = null)
         {
-            return availableValues.ContainsKey(value);
-        }
+            if (decimals.HasValue)
+            {
+                return decimals.Value;
+            }
+            else if (availableValues.ContainsKey(value))
+            {
+                return availableValues[value].Decimals;
+            }
 
-        public string GetUnit(TOGGLE_VALUE value)
-        {
-            return isSpecial(value) ? availableValues[value].Unit : DEFAULT_UNIT;
-        }
-
-        public int GetDecimals(TOGGLE_VALUE value)
-        {
-            return isSpecial(value) ? availableValues[value].Decimals : DEFAULT_DECIMALS;
+            return DEFAULT_DECIMALS;
         }
     }
 }

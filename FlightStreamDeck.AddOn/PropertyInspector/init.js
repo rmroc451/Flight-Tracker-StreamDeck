@@ -27,6 +27,13 @@
         // register property inspector to Stream Deck
         websocket.send(JSON.stringify(json));
     }
+
+    websocket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        if (window[data.event]) {
+            window[data.event](data.payload);
+        }
+    }
 }
 
 window.addEventListener('message', function (ev) {
@@ -117,7 +124,7 @@ function prepareDOMElements(baseElement) {
                     };
                 }
             );
-            /** Just in case the found HTML element already has an input or change - event attached, 
+            /** Just in case the found HTML element already has an input or change - event attached,
              * we clone it, and call it in the callback, right before the freshly attached event
             */
             const cloneEvt = el[evt];
@@ -267,8 +274,8 @@ function handleSdpiItemChange(e, idx) {
      * show the filename there
      */
     if (e.type === 'file') {
-        setFileLabel(sdpiItem, returnValue.value);
+        setFileLabel(sdpiItem, returnValue.value, IsEmbedding.value === "true");
     }
 
-    if (handleItemChanged) handleItemChanged(e, returnValue);
+    if (window["handleItemChanged"]) handleItemChanged(e, returnValue);
 }

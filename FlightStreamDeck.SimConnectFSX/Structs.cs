@@ -53,6 +53,9 @@ namespace FlightStreamDeck.SimConnectFSX
         AP_AIRSPEED_SET,
         AP_AIRSPEED_INC,
         AP_AIRSPEED_DEC,
+        QNH_SET,
+        QNH_INC,
+        QNH_DEC,
         AVIONICS_TOGGLE,
         ELEV_TRIM_SET,
         MAG_OFF,
@@ -122,6 +125,8 @@ namespace FlightStreamDeck.SimConnectFSX
         public int IsApFlcOn;
         public int ApAirspeed;
 
+        public int QNHmbar;
+
         public int Transponder;
         public int Com1;
         public int Com2;
@@ -149,17 +154,5 @@ namespace FlightStreamDeck.SimConnectFSX
         {
             return Data[index];
         }
-    }
-
-    struct ValueEntry
-    {
-        public ValueEntry(string unit, short decimals)
-        {
-            Unit = unit;
-            Decimals = decimals;
-        }
-
-        public string Unit;
-        public short Decimals;
     }
 }
