@@ -192,8 +192,10 @@ namespace FlightStreamDeck.AddOn
                         handleA10PinUpdate(readLine.Replace("\r", ""));
                         break;
                     case "A11":
-                    case "A12":
                         handleA11PinUpdate(readLine.Replace("\r", ""));
+                        break;
+                    case "A12":
+                        handleA12PinUpdate(readLine.Replace("\r", ""));
                         break;
                 }
 
@@ -286,7 +288,13 @@ namespace FlightStreamDeck.AddOn
         private void handleA11PinUpdate(string readLine)
         {
             int potVal = int.Parse(readLine.Split(":")[1]);
-            flightConnector.AvMasterToggle((uint)potVal);
+            flightConnector.Trigger(Core.TOGGLE_EVENT.ELECTRICAL_CIRCUIT_TOGGLE, Convert.ToUInt32(39));
+        }
+
+        private void handleA12PinUpdate(string readLine)
+        {
+            int potVal = int.Parse(readLine.Split(":")[1]);
+            flightConnector.Trigger(Core.TOGGLE_EVENT.ELECTRICAL_CIRCUIT_TOGGLE, Convert.ToUInt32(40));
         }
 
         private void SimConnect_Closed(object sender, EventArgs e)
