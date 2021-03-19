@@ -143,6 +143,10 @@ namespace FlightStreamDeck.Logics
         public double Nav1OBS { get; set; }
         public double Nav2OBS { get; set; }
         public double ADFCard { get; set; }
+        public int ADFActiveFrequency1 { get; set; }
+        public int ADFStandbyFrequency1 { get; set; }
+        public int ADFActiveFrequency2 { get; set; }
+        public int ADFStandbyFrequency2 { get; set; }
         public bool IsMasterAltOn { get; set; }
         public bool IsMasterBattOn { get; set; }
         public bool IsFuelPumpOn { get; set; }

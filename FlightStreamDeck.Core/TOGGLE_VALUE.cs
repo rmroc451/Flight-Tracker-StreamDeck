@@ -597,6 +597,10 @@
         PROP_RPM__3,
         PROP_RPM__4,
         COM_SPACING_MODE,
+        ADF_ACTIVE_FREQUENCY__1,
+        ADF_STANDBY_FREQUENCY__1,
+        ADF_ACTIVE_FREQUENCY__2,
+        ADF_STANDBY_FREQUENCY__2,
         ZULU_TIME,
         LOCAL_TIME,
     }
