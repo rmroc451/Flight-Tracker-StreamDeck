@@ -229,7 +229,7 @@ namespace FlightStreamDeck.Logics.Actions
                         forceRegen = false;
                         lastValue1 = value;
                         lastValue2 = lastValue;
-                        await UpdateImage(dependant, value, lastValue, false);
+                        await UpdateImage(lastDependant, value, lastValue, false);
                     }
                 }
             }
