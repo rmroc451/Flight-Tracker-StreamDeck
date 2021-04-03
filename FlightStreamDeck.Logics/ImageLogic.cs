@@ -135,28 +135,9 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        private void drawChevron(IImageProcessingContext ctx, int arrowStartY)
-        {
-            int width_margin = 2;
-            int img_width = WIDTH - (width_margin * 2);
-            int chart_width = img_width;
-            int chevronSize = 2;
-            var pen = new Pen(Color.Yellow, chevronSize + 1);
-
-            var arrowStartX = 7;
-            var arrowAddY = arrowStartY - ((chevronSize * 2));
-
-            var startPoint = new PointF(arrowStartX, arrowStartY);
-            var up = new PointF(arrowStartX, arrowAddY - chevronSize);
-            var over = new PointF(arrowStartX + chevronSize, arrowAddY + (chevronSize / 2));
-
-            PointF[] needle = { startPoint, up, over, startPoint };
-            ctx.DrawPolygon(pen, needle);
-        }
-
         public string GetNavComImage(string type, bool dependant, string value1 = null, string value2 = null, bool showMainOnly = false, string imageOnFilePath = null, byte[] imageOnBytes = null)
         {
-            var font = SystemFonts.CreateFont("Arial", 18, FontStyle.Bold);
+            var font = SystemFonts.CreateFont("Arial", 17, FontStyle.Regular);
             var valueFont = SystemFonts.CreateFont("Arial", showMainOnly ? 26 : 15, FontStyle.Regular);
 
             Image img = defaultBackground;
@@ -179,23 +160,20 @@ namespace FlightStreamDeck.Logics
                 {
                     var size = TextMeasurer.Measure(type, new RendererOptions(font));
                     Color displayColor = dependant ? Color.White : Color.LightGray;
-                    ctx.DrawText(type, font, displayColor, new PointF(imgSize.Width / 2 - size.Width / 2, imgSize.Height / 15));
+                    ctx.DrawText(type, font, displayColor, new PointF(imgSize.Width / 2 - size.Width / 2, showMainOnly ? imgSize.Height / 4 : imgSize.Height / 6));
                 }
 
                 if (!string.IsNullOrWhiteSpace(value1))
                 {
                     var size1 = TextMeasurer.Measure(value1, new RendererOptions(valueFont));
                     Color displayColor = dependant ? Color.Yellow : Color.LightGray;
-                    var xAdjust = (size1.Width * (showMainOnly ? .5 : .45));
-                    var yAdjust = (showMainOnly ? 2 : 3);
-                    ctx.DrawText(value1, valueFont, displayColor, new PointF((float)(imgSize.Width / 2 - xAdjust), imgSize.Height / yAdjust));
-                    if (!showMainOnly) drawChevron(ctx, (int)((imgSize.Height / 3) + (size1.Height * .75)));
+                    ctx.DrawText(value1, valueFont, displayColor, new PointF(imgSize.Width / 2 - size1.Width / 2, showMainOnly ? (imgSize.Height / 2) : (imgSize.Height / 6 + imgSize.Height / 4)));
                 }
                 if (!string.IsNullOrWhiteSpace(value2) && !showMainOnly)
                 {
                     var size2 = TextMeasurer.Measure(value2, new RendererOptions(valueFont));
                     Color displayColor = dependant ? Color.White : Color.LightGray;
-                    ctx.DrawText(value2, valueFont, displayColor, new PointF((float)(imgSize.Width / 2 - (size2.Width * .45)), imgSize.Height / 3 + size2.Height + 2));
+                    ctx.DrawText(value2, valueFont, displayColor, new PointF(imgSize.Width / 2 - size2.Width / 2, imgSize.Height / 6 + imgSize.Height / 4 + size2.Height));
                 }
             });
             using var memoryStream = new MemoryStream();
@@ -367,12 +345,12 @@ namespace FlightStreamDeck.Logics
                 //topValue
                 var ratio = (valueTop - (min < max ? min : max)) / range;
                 var valueTopText = (displayAbsoluteValue ? Math.Abs(valueTop) : valueTop).ToString(valueFormat);
-                setupValue(true, textTop, valueTopText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderTop);
+                SetupValue(true, textTop, valueTopText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderTop);
 
                 //bottomValue
                 ratio = (valueBottom - (min < max ? min : max)) / range;
                 var valueBottomText = (displayAbsoluteValue ? Math.Abs(valueBottom) : valueBottom).ToString(valueFormat);
-                setupValue(false, textBottom, valueBottomText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderBottom);
+                SetupValue(false, textBottom, valueBottomText, (float)ratio, img_width, chevronSize, width_margin, chartWidth, (float)min, (float)max, ctx, hideHeaderBottom);
 
                 if (!horizontal) ctx.Rotate(-90);
             });
@@ -384,7 +362,7 @@ namespace FlightStreamDeck.Logics
             return "data:image/png;base64, " + base64;
         }
 
-        private void setupValue(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, float width_margin, float chart_width, float min, float max, IImageProcessingContext ctx, bool hideHeader)
+        private void SetupValue(bool top, string labelText, string value, float ratio, int img_width, float chevronSize, float width_margin, float chart_width, float min, float max, IImageProcessingContext ctx, bool hideHeader)
         {
 
             float.TryParse(value, out float floatValue);
