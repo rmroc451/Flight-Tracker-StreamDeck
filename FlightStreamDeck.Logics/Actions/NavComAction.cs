@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -30,7 +29,7 @@ namespace FlightStreamDeck.Logics.Actions
     }
 
     [StreamDeckAction("tech.flighttracker.streamdeck.generic.navcom")]
-    public class NavComAction : StreamDeckAction<NavComSettings>
+    public class NavComAction : BaseAction<NavComSettings>
     {
         private AircraftStatus status;
         private const int HOLD_DURATION_MILLISECONDS = 1000;
@@ -61,6 +60,13 @@ namespace FlightStreamDeck.Logics.Actions
         private TOGGLE_EVENT? toggle;
         private TOGGLE_EVENT? set;
         private string mask;
+
+        string lastValue1 = null;
+        string lastValue2 = null;
+        bool lastDependant = false;
+        bool forceRegen = false;
+
+        private TaskCompletionSource<bool> initializationTcs;
 
         public NavComAction(ILogger<NavComAction> logger, IImageLogic imageLogic, IFlightConnector flightConnector, EnumConverter enumConverter)
         {
@@ -99,10 +105,11 @@ namespace FlightStreamDeck.Logics.Actions
 
             await UpdateImage(dependant: false, value1: null, value2: null, showMainOnly: false);
 
-            if (initializationTcs != null)
+            var tcs = initializationTcs;
+            if (tcs != null)
             {
                 logger.LogDebug("Trigger Task completion for initialization");
-                initializationTcs.SetResult(true);
+                tcs.SetResult(true);
             }
         }
 
@@ -187,26 +194,6 @@ namespace FlightStreamDeck.Logics.Actions
             SwitchTo(settings.Type);
         }
 
-        private string _lastValue1;
-        string lastValue1
-        {
-            get
-            {
-                return _lastValue1;
-            }
-            set
-            {
-                _lastValue1 = value;
-            }
-        }
-
-
-        string lastValue2 = null;
-        bool lastDependant = false;
-        bool forceRegen = false;
-
-        private TaskCompletionSource<bool> initializationTcs;
-
         private async Task FlightConnector_AircraftStatusUpdatedAsync(object sender, AircraftStatusUpdatedEventArgs e)
         {
             status = e.AircraftStatus;
@@ -288,14 +275,7 @@ namespace FlightStreamDeck.Logics.Actions
 
         private async Task UpdateImage(bool dependant, string value1, string value2, bool showMainOnly)
         {
-            try
-            {
-                await SetImageAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly, settings.ImageBackground, GetImageBytes()));
-            }
-            catch (WebSocketException)
-            {
-                // Ignore as we can't really do anything here
-            }
+            await SetImageSafeAsync(imageLogic.GetNavComImage(settings.Type, dependant, value1, value2, showMainOnly: showMainOnly, settings.ImageBackground, GetImageBytes()));
         }
 
         private byte[] GetImageBytes()
@@ -449,7 +429,14 @@ namespace FlightStreamDeck.Logics.Actions
                     device.Id,
                     device.Type == DeviceType.StreamDeckXL ? "Profiles/Numpad_XL" : "Profiles/Numpad");
 
-                await initializationTcs.Task;
+                try
+                {
+                    await initializationTcs.Task;
+                }
+                finally
+                {
+                    initializationTcs = null;
+                }
 
                 var (value, swap) = await DeckLogic.NumpadTcs.Task;
                 if (!string.IsNullOrEmpty(value))
